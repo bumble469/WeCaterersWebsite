@@ -1,9 +1,23 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+
+const variants = {
+  hidden: { opacity: 0, y: 40 },
+  enter: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
 
 const ContactSection = () => {
   return (
     <section id="contact" className="bg-white p-2">
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
+      <motion.div
+        variants={variants}
+        initial="hidden"
+        animate="enter"
+        exit="exit"
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12"
+      >
         {/* Contact Info */}
         <div>
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Get in Touch</h2>
@@ -31,7 +45,7 @@ const ContactSection = () => {
             <input
               type="text"
               placeholder="Your Name"
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border text-gray-700 border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
@@ -40,7 +54,7 @@ const ContactSection = () => {
             <input
               type="email"
               placeholder="you@example.com"
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-gray-700 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
@@ -49,7 +63,7 @@ const ContactSection = () => {
             <textarea
               rows="5"
               placeholder="Your message..."
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border text-gray-700 border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             ></textarea>
           </div>
@@ -60,7 +74,7 @@ const ContactSection = () => {
             Send Message
           </button>
         </form>
-      </div>
+      </motion.div>
     </section>
   );
 };
