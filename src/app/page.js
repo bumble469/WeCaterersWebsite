@@ -13,6 +13,7 @@ import homeservices from '@/assets/images/home-services.jpg';
 import homeabout from '@/assets/images/home-about.jpg';
 import homelottie from '@/assets/images/home-lottie.json';
 import Lottie from 'lottie-react';
+import Link from 'next/link';
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState(null);
@@ -84,11 +85,12 @@ export default function Home() {
 
         <div className="flex flex-col justify-center pt-8 md:h-full my-8 md:overflow-y-auto">
           {!activeSection && (
-            <div className='flex flex-col items-center mt-6 md:mt-0 md:items-start'>
+            <div className='flex flex-col items-center px-4 mt-6 md:mt-0 md:items-start'>
               <div className='flex items-center gap-x-2'>
-                <h1 className="headingfont text-4xl sm:text-5xl font-bold text-gray-900 mb-4">We Caterers</h1>
+                <h1 className="headingfont text-4xl sm:text-5xl font-bold text-gray-900 mb-1">We Caterers</h1>
                 <Lottie animationData={homelottie} className='h-24 w-auto pb-6'/>
               </div>
+              <Link href="/caterers" className="mb-3 text-center w-1/2 py-2 px-4 text-gray-700 border cursor-pointer transition duration-200 hover:scale-103">Explore</Link>
               <p className="text-md sm:text-lg text-gray-600 italic mb-4">
                 “Delivering excellence, one plate at a time.”
               </p>

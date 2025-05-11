@@ -14,7 +14,7 @@ const AuthComponent = () => {
   const toggleForm = () => setIsLogin(!isLogin);
 
   return (
-    <div className="flex items-center justify-center p-2 mt-2 min-h-screen">
+    <div className="flex items-center justify-center md:pt-12">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -90,7 +90,7 @@ const AuthComponent = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-transparent border text-black py-2 rounded-lg hover:bg-gray-200 transition"
+                className="w-full cursor-pointer bg-transparent border text-black py-2 rounded-lg hover:bg-gray-200 transition"
               >
                 {isLogin ? 'Login' : 'Sign Up'}
               </button>

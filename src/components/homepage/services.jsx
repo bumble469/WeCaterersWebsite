@@ -28,7 +28,7 @@ const ServicesSection = () => {
   ];
 
   return (
-    <section id="services" className="pt-12 mt-12 h-screen">
+    <section id="services" className="h-screen">
       <div className="max-w-6xl mx-auto text-center">
         <motion.div
           variants={variants}
