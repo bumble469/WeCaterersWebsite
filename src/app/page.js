@@ -1,7 +1,7 @@
 "use client";
 import Image from 'next/image';
 import { useState } from 'react';
-import logo from '../assets/images/logo.png';
+import logo from '../assets/images/logo1.png';
 import landingpageimage from '../assets/images/landingpageimage.jpg';
 import AuthComponent from '@/components/homepage/auth';
 import AboutSection from '@/components/homepage/about';
@@ -31,8 +31,8 @@ export default function Home() {
         }`}
       >
         <div className="flex flex-col md:flex-row items-center gap-x-12">
-          <Image src={logo} className="h-15 w-auto pb-4 cursor-pointer" alt="Logo" onClick={()=>setActiveSection(null)} />
-          <nav className="flex text-lg text-gray-700 gap-x-12 z-10">
+          <Image src={logo} className="h-28 w-auto cursor-pointer -m-4" alt="Logo" onClick={()=>setActiveSection(null)} />
+          <nav className="flex text-sm md:text-lg text-gray-700 gap-x-6 md:gap-x-12 z-10">
             <a
               href="#about"
               className={`hover:text-blue-600 ${activeSection === 'about' ? 'text-red-600' : ''}`}
@@ -83,9 +83,9 @@ export default function Home() {
           />
         </div>
 
-        <div className="flex flex-col justify-center pt-8 md:h-full my-8 md:overflow-y-auto">
+        <div className="flex custom-scrollbar flex-col justify-center pt-8 md:h-full my-8 md:overflow-y-auto">
           {!activeSection && (
-            <div className='flex flex-col items-center px-4 mt-6 md:mt-0 md:items-start'>
+            <div className='flex flex-col items-center px-4 md:mt-0 md:items-start'>
               <div className='flex items-center gap-x-2'>
                 <h1 className="headingfont text-4xl sm:text-5xl font-bold text-gray-900 mb-1">We Caterers</h1>
                 <Lottie animationData={homelottie} className='h-24 w-auto pb-6'/>
