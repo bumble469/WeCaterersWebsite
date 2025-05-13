@@ -90,7 +90,7 @@ export default function Home() {
                 <h1 className="headingfont text-4xl sm:text-5xl font-bold text-gray-900 mb-1">We Caterers</h1>
                 <Lottie animationData={homelottie} className='h-24 w-auto pb-6'/>
               </div>
-              <Link href="/caterers" className="mb-3 text-center w-1/2 py-2 px-4 text-gray-700 border cursor-pointer transition duration-200 hover:scale-103">Explore</Link>
+              <Link href="/userdashboard" className="mb-3 text-center w-1/2 py-2 px-4 text-gray-700 border cursor-pointer transition duration-200 hover:scale-103">Explore</Link>
               <p className="text-md sm:text-lg text-gray-600 italic mb-4">
                 “Delivering excellence, one plate at a time.”
               </p>
