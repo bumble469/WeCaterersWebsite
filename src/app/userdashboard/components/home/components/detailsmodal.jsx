@@ -36,7 +36,7 @@ const CatererDetailsModal = ({ caterer, isOpen, onClose }) => {
         <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-6 relative">
           {/* Close button */}
           <button
-            className="absolute top-4 right-4 text-gray-700 text-2xl transition duration-150 hover:scale-110 cursor-pointer"
+            className="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-red-500 text-2xl font-bold transition duration-200"
             onClick={onClose}
           >
             &times;
@@ -55,7 +55,7 @@ const CatererDetailsModal = ({ caterer, isOpen, onClose }) => {
             <div className="flex-1">
               <h2 className="text-2xl font-semibold text-gray-800">{caterer.name}</h2>
               <p className="text-sm italic text-gray-600">{caterer.tagline}</p>
-              <p className="text-sm mt-2">⭐ {caterer.rating} | Starting from {caterer.price}</p>
+              <p className="text-sm text-gray-500 mt-2">⭐ {caterer.rating} | Starting from {caterer.price}</p>
               
               <div className="mt-4 text-gray-700">
                 <h3 className="text-lg font-semibold">Event Type: {caterer.eventType}</h3>

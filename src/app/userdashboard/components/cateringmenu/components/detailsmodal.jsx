@@ -30,7 +30,7 @@ const MenuItemDetailsModal = ({ item, isOpen, onClose }) => {
       >
         <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-6 relative">
           <button
-            className="absolute top-4 right-4 text-gray-700 text-2xl transition duration-150 hover:scale-110 cursor-pointer"
+            className="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-red-500 text-2xl font-bold transition duration-200"
             onClick={onClose}
           >
             &times;
@@ -45,10 +45,9 @@ const MenuItemDetailsModal = ({ item, isOpen, onClose }) => {
             <div className="flex-1">
               <h2 className="text-2xl font-semibold text-gray-800">{item.name}</h2>
               <p className="text-sm italic text-gray-600">{item.tagline}</p>
-              <p className="text-sm mt-2">⭐ {item.rating} | Starting from ₹{item.price}</p>
+              <p className="text-sm mt-2 text-gray-500">⭐ {item.rating} | Starting from ₹{item.price}</p>
               <div className="mt-4 text-gray-700">
                 <h3 className="text-lg font-semibold">Event Type: {item.eventType}</h3>
-                <p className="text-sm">{item.location}</p>
               </div>
             </div>
           </div>

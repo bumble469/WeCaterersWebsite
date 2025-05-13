@@ -5,6 +5,7 @@ import Image from "next/image";
 import { FiFilter } from "react-icons/fi";
 import Filters from "./components/filters";
 import MenuItemDetailsModal from "./components/detailsmodal";
+import CateringServiceModal from "./components/servicemodal";
 
 const menuItems = [
   {
@@ -86,37 +87,70 @@ const CateringMenu = () => {
     return meetsPrice && meetsRating && meetsCuisine;
   });
 
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+
+  const openServiceModal = (service) => {
+    setSelectedService(service);
+    setIsServiceModalOpen(true);
+  };
+
+  const closeServiceModal = () => {
+    setIsServiceModalOpen(false);
+    setSelectedService(null);
+  };
+
+  const services = [
+    {
+      title: "Wedding Catering",
+      description: "Delicious multi-course meals tailored for weddings with customizable menus and full service staff.",
+      price: "$3000",
+      capacity: "Up to 200 guests",
+    },
+    {
+      title: "Corporate Events",
+      description: "Professional catering for conferences, seminars, and office gatherings with timely delivery and setup.",
+      price: "$3000",
+      capacity: "Up to 200 guests",
+    },
+    {
+      title: "Birthday Parties",
+      description: "Fun and themed catering for all age groups with snacks, beverages, and cakes included.",
+      price: "$3000",
+      capacity: "Up to 200 guests",
+    },
+    {
+      title: "Festival Specials",
+      description: "Traditional and festive meals celebrating cultural occasions with authentic flavors.",
+      price: "$3000",
+      capacity: "Up to 200 guests",
+    },
+  ];
+
   return (
     <>
       {/* MODAL */}
       {selectedItem && (
         <MenuItemDetailsModal item={selectedItem} isOpen={isModalOpen} onClose={closeModal} />
       )}
+      {selectedService && (
+        <CateringServiceModal serviceDetails={selectedService} isOpen={isServiceModalOpen} onClose={closeServiceModal} />
+      )}
 
       {/* READILY AVAILABLE SERVICES BAR */}
-      <div className="bg-gradient-to-r from-blue-100 via-blue-50 to-blue-100 shadow-md px-6 py-4 border border-blue-200">
+      <div 
+        className="bg-gradient-to-r cursor-pointer from-blue-100 via-blue-50 to-blue-100 shadow-md px-6 py-4 border border-blue-200">
         <h2 className="text-lg md:text-xl font-bold text-blue-700 mb-3 text-center md:text-left">
           ⭐ Readily Available Services
         </h2>
         <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-          {[
-            "Wedding Catering",
-            "Corporate Events",
-            "Birthday Parties",
-            "Festival Specials",
-          ].map((service, index) => (
+          {services.map((service, index) => (
             <div
               key={index}
               className="bg-white border border-blue-500 text-blue-700 px-4 py-2 rounded-sm flex items-center gap-2 hover:bg-blue-100 hover:shadow transition-all"
+              onClick={() => openServiceModal(service)} // <-- Add this line
             >
-              <span className="font-medium text-sm md:text-base">{service}</span>
-              <button
-                onClick={() => alert(`${service} added!`)}
-                className="text-blue-700 text-lg hover:text-blue-900 transition"
-                title="Add"
-              >
-                ➕
-              </button>
+              <span className="font-medium text-sm md:text-base">{service.title}</span>
             </div>
           ))}
         </div>
