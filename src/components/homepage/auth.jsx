@@ -1,11 +1,23 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import OtpModal from './otpmodal';
+import { toast } from 'react-toastify';
 
 const variants = {
   hidden: { opacity: 0, y: 20 },
   enter: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
+};
+
+const initialFormData = {
+  fullName: '',
+  cateringName: '',
+  ownerName: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
 };
 
 const initialErrors = {
@@ -15,6 +27,17 @@ const initialErrors = {
   email: '',
   password: '',
   confirmPassword: '',
+};
+
+const API_ENDPOINTS = {
+  login: {
+    user: 'http://localhost:3000/api/auth/user/login',
+    caterer: 'http://localhost:3000/api/auth/caterer/login',
+  },
+  signup: {
+    user: 'http://localhost:3000/api/auth/user/signup',
+    caterer: 'http://localhost:3000/api/auth/caterer/signup',
+  }
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,11 +54,25 @@ const AuthComponent = () => {
     password: '',
     confirmPassword: '',
   });
+  const [showOtp, setShowOtp] = useState(false);
 
   const [errors, setErrors] = useState(initialErrors);
   const [isValid, setIsValid] = useState(false);
 
-  const toggleForm = () => setIsLogin(!isLogin);
+  const toggleForm = () => {
+    setIsLogin(!isLogin);
+    setFormData(initialFormData);  // reset form
+    setErrors(initialErrors);      // reset errors
+    setShowOtp(false);             // close OTP modal if open
+  };
+
+  // Switch User/Caterer
+  const handleUserTypeChange = (type) => {
+    setUserType(type);
+    setFormData(initialFormData);  // reset form
+    setErrors(initialErrors);      // reset errors
+    setShowOtp(false);             // close OTP modal if open
+  };
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
@@ -54,7 +91,6 @@ const AuthComponent = () => {
   };
 
   useEffect(() => {
-    // Check form validity
     const isSignup = !isLogin;
     const relevantFields = userType === 'user'
       ? ['fullName', 'email', 'password', 'confirmPassword']
@@ -66,10 +102,70 @@ const AuthComponent = () => {
     setIsValid(isLogin || (isSignup && allFilled && allValid));
   }, [formData, errors, isLogin, userType]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isValid) return;
-    console.log("Submitted Data:", { userType, ...formData });
+    try {
+      if (isLogin) {
+        let endpoint = '';
+        let dataToSend = {};
+
+        if (userType === 'user') {
+          endpoint = API_ENDPOINTS.login.user;
+          dataToSend = {
+            email: formData.email,
+            password: formData.password,
+          };
+        } else if (userType === 'caterer') {
+          endpoint = API_ENDPOINTS.login.caterer;
+          dataToSend = {
+            email: formData.email,
+            password: formData.password,
+          };
+        }
+        const response = await axios.post(endpoint, dataToSend);
+        if(response.status == 200){
+          toast.success("Login success!");
+        }else{
+          toast.error("Login Failed!");
+        }
+      } else {
+        let endpoint = '';
+        let dataToSend = {};
+
+        if (userType === 'user') {
+          endpoint = API_ENDPOINTS.signup.user;
+          dataToSend = {
+            mode:"send",
+            email:formData.email,
+            fullname:formData.fullName,
+            password:formData.password
+          };
+        } else if (userType === 'caterer') {
+          endpoint = API_ENDPOINTS.signup.caterer;
+          dataToSend = {
+            mode: "send",
+            cateringname: formData.cateringName,
+            ownername: formData.ownerName,
+            email: formData.email,
+            password: formData.password,
+          };
+        }
+
+        const response = await axios.post(endpoint, dataToSend);
+        if(response.status === 200){
+          setShowOtp(true);
+        }
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || 'Something went wrong';
+
+      if (isLogin) {
+        console.error('Login Error:', message);
+      } else {
+        console.error('Signup Error:', message);
+      }
+    }
   };
 
   return (
@@ -98,7 +194,7 @@ const AuthComponent = () => {
                 {['user', 'caterer'].map(type => (
                   <button
                     key={type}
-                    onClick={() => setUserType(type)}
+                    onClick={() => handleUserTypeChange(type)}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold w-32 transition-all cursor-pointer ${
                       userType === type
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
@@ -214,6 +310,7 @@ const AuthComponent = () => {
           </motion.div>
         </AnimatePresence>
       </motion.div>
+      {showOtp && <OtpModal isOpen={showOtp} onClose={()=>setShowOtp(false)} email={formData.email} userType={userType}/>}
     </div>
   );
 };

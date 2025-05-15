@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import Image from 'next/image';
 import { useState } from 'react';
 import logo from '../assets/images/logo1.png';
@@ -12,7 +12,8 @@ import homelcontact from '@/assets/images/home-contact.jpg';
 import homeservices from '@/assets/images/home-services.jpg';
 import homeabout from '@/assets/images/home-about.jpg';
 import homelottie from '@/assets/images/home-lottie.json';
-import Lottie from 'lottie-react';
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import Link from 'next/link';
 
 export default function Home() {

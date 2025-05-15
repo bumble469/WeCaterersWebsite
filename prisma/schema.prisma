@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model caterer {
+  cateringid          BigInt  @id @default(autoincrement())
+  cateringname        String  @db.VarChar(255)
+  ownername           String  @db.VarChar(255)
+  email               String  @unique @db.VarChar(255)
+  password            String  @db.VarChar(255)
+  contact             String? @db.VarChar(15)
+  address             String?
+  description         String?
+  cateringimage       Bytes?
+  cateringbannerimage Bytes?
+
+  @@index([email], map: "idx_caterers_email")
+
+  @@map("caterers")  // Map Prisma model 'caterer' to actual table 'caterers'
+}
+
+model user {
+  userid       BigInt  @id @default(autoincrement())
+  fullname     String  @db.VarChar(255)
+  email        String  @unique @db.VarChar(255)
+  password     String  @db.VarChar(255)
+  profilephoto Bytes?
+  address      String?
+  contact      String? @db.VarChar(15)
+  bio          String?
+  sociallink1  String? @db.VarChar(255)
+  sociallink2  String? @db.VarChar(255)
+  sociallink3  String? @db.VarChar(255)
+
+  @@index([email], map: "idx_users_email")
+
+  @@map("users")  // Likewise map model user to table users
+}
+
