@@ -3,8 +3,13 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
+import loadingicon from "../../assets/images/loadingicon.json";
 
-const OtpModal = ({ isOpen, onClose, email, userType }) => {
+const OtpModal = ({ isOpen, onClose, email, userType, setLogin }) => {
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
     if (isOpen) {
         document.body.style.overflow = 'hidden';
@@ -23,19 +28,24 @@ const OtpModal = ({ isOpen, onClose, email, userType }) => {
     
   const handleVerify = async () => {
     try {
-      const response = await axios.post(`http://localhost:3000/api/auth/${userType}/signup`, {
+      setLoading(true);
+      const response = await axios.post(`/api/auth/${userType}/signup`, {
         mode:"verify",
         email,
         code: otp,
       });
-      if(response.status === 200){
+      console.log(email+" "+otp);
+      if(response.status == 200){
         toast.success("Signup successful!");
         onClose();
+        setLogin(true);
       }else{
         toast.error("Error creating account!");
       }
     } catch (error) {
       console.error('Verification failed:', error.response?.data || error.message);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -68,7 +78,11 @@ const OtpModal = ({ isOpen, onClose, email, userType }) => {
             onClick={handleVerify}
             className="px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white"
           >
-            Verify
+            {loading ? (
+              <Lottie animationData={loadingicon} style={{height:'2.5rem', width:'2.5rem'}} />
+            ) : (
+              <>Verify</>
+            )}
           </button>
         </div>
       </motion.div>

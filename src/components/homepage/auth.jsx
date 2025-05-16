@@ -1,9 +1,13 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import OtpModal from './otpmodal';
 import { toast } from 'react-toastify';
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
+import loadingicon from "../../assets/images/loadingicon.json";
 
 const variants = {
   hidden: { opacity: 0, y: 20 },
@@ -45,7 +49,9 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 
 const AuthComponent = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const router = useRouter();
   const [userType, setUserType] = useState('user');
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     cateringName: '',
@@ -61,17 +67,16 @@ const AuthComponent = () => {
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
-    setFormData(initialFormData);  // reset form
-    setErrors(initialErrors);      // reset errors
-    setShowOtp(false);             // close OTP modal if open
+    setFormData(initialFormData);  
+    setErrors(initialErrors);      
+    setShowOtp(false);             
   };
 
-  // Switch User/Caterer
   const handleUserTypeChange = (type) => {
     setUserType(type);
-    setFormData(initialFormData);  // reset form
-    setErrors(initialErrors);      // reset errors
-    setShowOtp(false);             // close OTP modal if open
+    setFormData(initialFormData);  
+    setErrors(initialErrors);      
+    setShowOtp(false);             
   };
 
   const handleChange = (field, value) => {
@@ -105,6 +110,7 @@ const AuthComponent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isValid) return;
+    setLoading(true)
     try {
       if (isLogin) {
         let endpoint = '';
@@ -125,7 +131,20 @@ const AuthComponent = () => {
         }
         const response = await axios.post(endpoint, dataToSend);
         if(response.status == 200){
-          toast.success("Login success!");
+          toast.success("Login success!",{
+            hideProgressBar: true,    
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: false,
+            progress: undefined,
+          });
+          setFormData(initialFormData); 
+          const id = response.data.userid || response.data.cateringid;
+          if (userType === 'user') {
+            router.push(`/userdashboard?userid=${id}`);
+          } else if (userType === 'caterer') {
+            router.push(`/catererdashboard?cateringid=${id}`);
+          }
         }else{
           toast.error("Login Failed!");
         }
@@ -165,6 +184,8 @@ const AuthComponent = () => {
       } else {
         console.error('Signup Error:', message);
       }
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -292,9 +313,13 @@ const AuthComponent = () => {
                   isValid
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                }`}
+                } flex items-center justify-center`} // Add flex and centering here
               >
-                {isLogin ? 'Login' : 'Sign Up'}
+                {loading ? (
+                  <Lottie animationData={loadingicon} style={{height:'2.5rem', width:'2.5rem'}} />
+                ) : (
+                  isLogin ? 'Login' : 'Sign Up'
+                )}
               </button>
             </form>
 
@@ -310,7 +335,7 @@ const AuthComponent = () => {
           </motion.div>
         </AnimatePresence>
       </motion.div>
-      {showOtp && <OtpModal isOpen={showOtp} onClose={()=>setShowOtp(false)} email={formData.email} userType={userType}/>}
+      {showOtp && <OtpModal isOpen={showOtp} onClose={()=>setShowOtp(false)} email={formData.email} userType={userType} setLogin={()=>setIsLogin(true)}/>}
     </div>
   );
 };
