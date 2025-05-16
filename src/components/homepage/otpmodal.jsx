@@ -43,6 +43,7 @@ const OtpModal = ({ isOpen, onClose, email, userType, setLogin }) => {
         toast.error("Error creating account!");
       }
     } catch (error) {
+      toast.error("Verification failed!");
       console.error('Verification failed:', error.response?.data || error.message);
     }finally{
       setLoading(false);

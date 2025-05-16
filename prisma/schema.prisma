@@ -42,3 +42,14 @@ model user {
   @@map("users")  // Likewise map model user to table users
 }
 
+model service {
+  serviceid   Int    @id @default(autoincrement())
+  cateringid  Int
+  name        String
+  description String
+  price       Float
+  capacity    Int
+
+  @@map("services")
+}
+

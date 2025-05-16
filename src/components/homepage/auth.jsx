@@ -139,11 +139,10 @@ const AuthComponent = () => {
             progress: undefined,
           });
           setFormData(initialFormData); 
-          const id = response.data.userid || response.data.cateringid;
           if (userType === 'user') {
-            router.push(`/userdashboard?userid=${id}`);
+            router.push('/userdashboard');
           } else if (userType === 'caterer') {
-            router.push(`/catererdashboard?cateringid=${id}`);
+            router.push('/catererdashboard');
           }
         }else{
           toast.error("Login Failed!");
@@ -180,9 +179,9 @@ const AuthComponent = () => {
       const message = error.response?.data?.message || error.message || 'Something went wrong';
 
       if (isLogin) {
-        console.error('Login Error:', message);
+        toast.error('Login Error:', message);
       } else {
-        console.error('Signup Error:', message);
+        toast.error('Signup Error:', message);
       }
     } finally{
       setLoading(false);
