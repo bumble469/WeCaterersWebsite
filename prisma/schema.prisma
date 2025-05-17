@@ -49,7 +49,24 @@ model service {
   description String
   price       Float
   capacity    Int
+  availability Boolean @default(true)
 
   @@map("services")
 }
+
+model menu {
+  menuid            BigInt   @id @default(autoincrement())
+  cateringid        BigInt
+  name              String
+  description       String?
+  price             Float  
+  rating            Float?   
+  cuisinetype       String?
+  dietarypreference String?
+  image_data        Bytes?   // for storing image binary data
+
+  @@map("menu")
+}
+
+
 

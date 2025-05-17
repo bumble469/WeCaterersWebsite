@@ -15,7 +15,7 @@ const CatererDashboardServices = () => {
     description: '',
     price: '',
     capacity: '',
-    available: true,
+    availability: true,
   });
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const CatererDashboardServices = () => {
           description: '',
           price: '',
           capacity: '',
-          available: true,
+          availability: true, 
         });
         setShowForm(false);
         fetchServices();
@@ -69,11 +69,48 @@ const CatererDashboardServices = () => {
     }
   };
 
-  const handleEditService = (id, updatedService) => {
-    setServices((prev) =>
-      prev.map((service) => (service.serviceid === id ? updatedService : service))
-    );
+
+  const handleEditService = async (serviceid, serviceData) => {
+    try {
+      const response = await fetch('/api/caterer/service', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          serviceid,
+          name: serviceData.name,
+          description: serviceData.description,
+          price: parseFloat(serviceData.price),
+          capacity: parseInt(serviceData.capacity),
+          availability: serviceData.availability,
+        }),
+      });
+
+      if (response.status == 200 || response.status == 201) {
+        toast.success("Service updated!",{
+          autoClose: 1000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+        });
+        fetchServices();
+      } else {
+        toast.error("Could not update service!",{
+          autoClose: 1000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+        })
+      }
+    } catch (err) {
+      console.error('Error editing service:', err);
+    }
   };
+
 
   const handleDeleteService = async (serviceid) => {
     try {
@@ -98,7 +135,6 @@ const CatererDashboardServices = () => {
       setShowDeleteConfirm(null);
     }
   };
-
 
   return (
     <motion.div
@@ -180,9 +216,9 @@ const CatererDashboardServices = () => {
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={newService.available}
+                  checked={newService.availability || false}
                   onChange={(e) =>
-                    setNewService({ ...newService, available: e.target.checked })
+                    setNewService({ ...newService, availability: e.target.checked })
                   }
                 />
                 <label className="ml-2 text-sm text-gray-600">Available</label>
@@ -196,6 +232,7 @@ const CatererDashboardServices = () => {
             </motion.form>
           )}
         </AnimatePresence>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -207,9 +244,16 @@ const CatererDashboardServices = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
-              className={`bg-${service.available ? 'green' : 'gray'}-50 rounded-lg p-4 border-2 border-${service.available ? 'green' : 'gray'}-300 flex flex-col`}
+              className={`bg-${service.availability ? 'green-50' : 'gray-100'} rounded-lg p-4 border-2 border-${service.availability ? 'green' : 'gray'}-300 flex flex-col`}
             >
-              <h3 className="text-xl font-semibold text-gray-800">{service.name}</h3>
+              <h3 className="text-xl font-semibold text-gray-800 flex items-center space-x-2">
+                <span>{service.name}</span>
+                {Boolean(service.availability) == true ? (
+                  <span className="text-green-500 text-sm font-semibold bg-green-100 px-2 py-0.5 rounded">Available</span>
+                ) : (
+                  <span className="text-red-500 text-sm font-semibold bg-red-100 px-2 py-0.5 rounded">Not Available</span>
+                )}
+              </h3>
               <p className="text-sm text-gray-600 mt-2">{service.description}</p>
               <div className="mt-4">
                 <p className="text-lg font-semibold text-gray-700">{service.price}</p>
@@ -219,7 +263,12 @@ const CatererDashboardServices = () => {
               <div className="flex justify-between mt-4 space-x-4">
                 <button
                   className="py-1 px-3 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105"
-                  onClick={() => setEditingService(service)}
+                  onClick={() =>
+                    setEditingService({
+                      ...service,
+                      availability: Boolean(service.availability),
+                    })
+                  }
                 >
                   Edit
                 </button>
@@ -230,7 +279,6 @@ const CatererDashboardServices = () => {
                 >
                   Delete
                 </button>
-
               </div>
             </motion.div>
           ))}
@@ -301,11 +349,11 @@ const CatererDashboardServices = () => {
                     <div className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={editingService.available}
+                        checked={editingService.availability}
                         onChange={(e) =>
                           setEditingService({
                             ...editingService,
-                            available: e.target.checked,
+                            availability: e.target.checked,
                           })
                         }
                       />
@@ -373,8 +421,6 @@ const CatererDashboardServices = () => {
               </motion.div>
             )}
           </AnimatePresence>
-
-
         </AnimatePresence>
       </div>
     </motion.div>

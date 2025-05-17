@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const addService = async (token, name, description, price, capacity, availability) => {
+export const editServices = async (token, serviceid, name, description, price, capacity, availability) => {
   if (!token) {
     return { status: 401, data: { error: 'Authorization token is required!' } };
   }
@@ -11,30 +11,36 @@ export const addService = async (token, name, description, price, capacity, avai
   try {
     const secret = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secret);
-
     const cateringid = parseInt(decoded.cateringid);
+
     if (!cateringid) {
       return { status: 403, data: { error: 'Invalid token: cateringid missing' } };
     }
 
-    if (!name || !price || !capacity) {
-      return { status: 400, data: { error: 'Name, price, and capacity are required' } };
+    // Fetch the existing service
+    const service = await prisma.service.findUnique({
+      where: { serviceid },
+    });
+
+    if (!service || service.cateringid !== cateringid) {
+      return { status: 404, data: { error: 'Service not found or unauthorized' } };
     }
 
-    const newService = await prisma.service.create({
+    // Update the service
+    const updatedService = await prisma.service.update({
+      where: { serviceid },
       data: {
-        cateringid,
         name,
-        description: description || '',
-        price: Number(price),
-        capacity: Number(capacity),
-        availability: availability !== undefined ? availability : true, 
+        description,
+        price,
+        capacity,
+        availability,
       },
     });
 
-    return { status: 200, message: 'Service added successfully', data: newService };
+    return { status: 200, data: updatedService };
   } catch (err) {
-    console.error('Error adding service:', err);
+    console.error('Error updating service:', err);
     if (err.name === 'JsonWebTokenError') {
       return { status: 403, data: { error: 'Invalid token' } };
     }
