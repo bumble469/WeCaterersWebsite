@@ -28,7 +28,7 @@ export async function PUT(req) {
 
     const body = await req.json();
 
-    const { cateringname, ownername, contact, email, address, description, cateringimage, cateringbannerimage } = body;
+    const { cateringname, ownername, contact, email, address, description, cateringimage, cateringbannerimage, eventtype } = body;
 
     const { status, message } = await updateCatererProfile(
       token,
@@ -39,7 +39,8 @@ export async function PUT(req) {
       address,
       description,
       cateringimage,
-      cateringbannerimage
+      cateringbannerimage,
+      eventtype
     );
 
     return NextResponse.json({ message }, { status });

@@ -49,7 +49,7 @@ const CateringServiceModal = ({ isOpen, onClose, serviceDetails }) => {
                     <div className="space-y-4 text-gray-700">
                         <div>
                             <p className="text-sm font-semibold text-gray-500">Name</p>
-                            <p className="text-lg font-medium">{serviceDetails?.title}</p>
+                            <p className="text-lg font-medium">{serviceDetails?.name}</p>
                         </div>
                         <div>
                             <p className="text-sm font-semibold text-gray-500">Description</p>
@@ -58,7 +58,7 @@ const CateringServiceModal = ({ isOpen, onClose, serviceDetails }) => {
                         <div className="flex flex-wrap gap-4">
                             <div>
                                 <p className="text-sm font-semibold text-gray-500">Price</p>
-                                <p className="text-base">{serviceDetails?.price}</p>
+                                <p className="text-base">&#8377;{serviceDetails?.price}</p>
                             </div>
                             <div>
                                 <p className="text-sm font-semibold text-gray-500">Capacity</p>

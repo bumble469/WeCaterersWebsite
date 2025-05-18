@@ -26,7 +26,7 @@ export const loginUser = async (body) => {
       return { status: 401, data: { error: 'Invalid email or password!' } };
     }
 
-    const token = jwt.sign(
+    const usertoken = jwt.sign(
       { userid: user.userid.toString(), email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
@@ -36,7 +36,7 @@ export const loginUser = async (body) => {
       status: 200,
       data: {
         message: 'Login successful!',
-        token,
+        usertoken,
         user: {
           userid: user.userid.toString(),
           fullname: user.fullname,

@@ -1,6 +1,11 @@
 'use client';
-import { useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
+import { Briefcase, Utensils, DollarSign } from 'lucide-react';
+import Lottie from 'lottie-react';
+import loadingicon from "../../../assets/images/loadingicon.json";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -9,107 +14,90 @@ const fadeInUp = {
 };
 
 const CatererDashboardOverview = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const res = await axios.get('/api/caterer/overview', {
+          withCredentials: true,
+        });
+        setData(res.data);
+      } catch (err) {
+        console.error('Failed to fetch caterer overview:', err);
+      }
+    };
+
+    fetchOverview();
+  }, []);
+
   return (
     <motion.section 
-      className="bg-white rounded-lg shadow-md p-6"
+      className="bg-white rounded-lg shadow-md p-6 space-y-4"
       initial="initial"
       animate="animate"
       variants={fadeInUp}
     >
-      <motion.h2 
-        className="text-2xl font-semibold text-gray-800 mb-2"
-        variants={fadeInUp}
-        transition={{ delay: 0.1 }}
-      >
-        Dashboard Overview
-      </motion.h2>
-
-      <motion.p 
-        className="text-gray-600 text-sm mb-4"
-        variants={fadeInUp}
-        transition={{ delay: 0.15 }}
-      >
-        Welcome to your dashboard! Monitor and manage your catering business, including orders and services.
-      </motion.p>
-
-      {/* Profile */}
-      <motion.div 
-        className="flex items-center justify-between border-b border-gray-200 pb-4 mb-4"
-        variants={fadeInUp}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="flex items-center">
-          <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-200">
-            <img src="/path/to/profile-icon.jpg" alt="Caterer Profile" className="w-full h-full object-cover" />
-          </div>
-          <div className="ml-3">
-            <h3 className="text-lg font-semibold">Caterer Name</h3>
-            <p className="text-xs text-gray-500">Active</p>
-          </div>
+      {!data ? (
+        <div className="flex justify-center items-center h-[50vh]">
+          <Lottie animationData={loadingicon} loop={true} style={{ height: 50 }} />
         </div>
-      </motion.div>
-
-      {/* Services */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        {[
-          { title: 'Total Services', subtitle: '4 Services Offered' },
-          { title: 'Available Services', subtitle: '3 Services Available' },
-        ].map((item, i) => (
+      ):(
+        <>
           <motion.div 
-            key={item.title}
-            className="bg-gray-50 p-4 rounded-lg shadow-sm"
+            className="flex items-center border-b border-gray-200 pb-4"
             variants={fadeInUp}
-            transition={{ delay: 0.25 + i * 0.05 }}
+            transition={{ delay: 0.1 }}
           >
-            <h4 className="text-base font-semibold text-gray-800">{item.title}</h4>
-            <p className="text-sm text-gray-600 mt-1">{item.subtitle}</p>
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+              <img src={data.cateringimage || '/placeholder.jpg'} alt="Caterer Profile" className="w-full h-full object-cover" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-xl font-semibold text-gray-800">{data.cateringname}</h3>
+              <p className="text-sm text-gray-500 mt-1">{data.description}</p>
+            </div>
           </motion.div>
-        ))}
-      </div>
 
-      {/* Events */}
-      <motion.div 
-        className="bg-gray-50 p-4 rounded-lg shadow-sm mb-4"
-        variants={fadeInUp}
-        transition={{ delay: 0.35 }}
-      >
-        <h4 className="text-base font-semibold text-gray-800">Upcoming Events</h4>
-        <ul className="mt-2 space-y-1 text-sm text-gray-600">
-          <li>Wedding Reception - May 15, 2025 • 100 guests</li>
-          <li>Corporate Lunch - May 20, 2025 • 50 guests</li>
-        </ul>
-      </motion.div>
-
-      {/* Revenue */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        {[
-          { title: 'Total Earnings', value: '$15,000' },
-          { title: 'Upcoming Payments', value: '$2,000' },
-        ].map((item, i) => (
+          {/* Total Services */}
           <motion.div 
-            key={item.title}
-            className="bg-gray-50 p-4 rounded-lg shadow-sm"
+            className="bg-gray-50 p-4 rounded-lg shadow-sm flex items-center"
             variants={fadeInUp}
-            transition={{ delay: 0.4 + i * 0.05 }}
+            transition={{ delay: 0.2 }}
           >
-            <h4 className="text-base font-semibold text-gray-800">{item.title}</h4>
-            <p className="text-lg text-gray-800 mt-1">{item.value}</p>
+            <Briefcase className="w-6 h-6 text-blue-600 mr-3" />
+            <div>
+              <h4 className="text-base font-semibold text-gray-800">Total Services</h4>
+              <p className="text-sm text-gray-600 mt-1">{data.serviceCount} Services Offered</p>
+            </div>
           </motion.div>
-        ))}
-      </div>
 
-      {/* Activity */}
-      <motion.div 
-        className="bg-gray-50 p-4 rounded-lg shadow-sm"
-        variants={fadeInUp}
-        transition={{ delay: 0.5 }}
-      >
-        <h4 className="text-base font-semibold text-gray-800">Recent Activity</h4>
-        <ul className="mt-2 space-y-1 text-sm text-gray-600">
-          <li>New booking for Wedding Reception – May 15, 2025</li>
-          <li>Service “Buffet Setup” price updated</li>
-        </ul>
-      </motion.div>
+          {/* Total Menu Items */}
+          <motion.div 
+            className="bg-gray-50 p-4 rounded-lg shadow-sm flex items-center"
+            variants={fadeInUp}
+            transition={{ delay: 0.25 }}
+          >
+            <Utensils className="w-6 h-6 text-green-600 mr-3" />
+            <div>
+              <h4 className="text-base font-semibold text-gray-800">Total Menu Items</h4>
+              <p className="text-sm text-gray-600 mt-1">{data.menuItemCount} Items Available</p>
+            </div>
+          </motion.div>
+
+          {/* Total Earnings */}
+          <motion.div 
+            className="bg-gray-50 p-4 rounded-lg shadow-sm flex items-center"
+            variants={fadeInUp}
+            transition={{ delay: 0.3 }}
+          >
+            <DollarSign className="w-6 h-6 text-yellow-600 mr-3" />
+            <div>
+              <h4 className="text-base font-semibold text-gray-800">Total Earnings</h4>
+              <p className="text-lg text-gray-800 mt-1">${data.totalEarnings || 0}</p>
+            </div>
+          </motion.div>
+        </>
+      )}
     </motion.section>
   );
 };

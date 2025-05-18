@@ -18,10 +18,12 @@ model caterer {
   description         String?
   cateringimage       Bytes?
   cateringbannerimage Bytes?
+  eventtype           String?
+  rating              Float?
+  pricerange          String? @db.VarChar(50)
 
   @@index([email], map: "idx_caterers_email")
-
-  @@map("caterers")  // Map Prisma model 'caterer' to actual table 'caterers'
+  @@map("caterers")
 }
 
 model user {

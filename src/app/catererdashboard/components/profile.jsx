@@ -5,6 +5,8 @@ import defaultcatererbanner from "../../../assets/images/defaultcatererbanner.pn
 import { FaPencilAlt } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Lottie from "lottie-react";
+import loadingicon from "../../../assets/images/loadingicon.json";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -20,6 +22,7 @@ const fadeInUp = {
 };
 
 const CatererDashboardProfile = () => {
+  const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState({
     icon: "/default-profile.png",
     banner: "",
@@ -29,14 +32,15 @@ const CatererDashboardProfile = () => {
     phone: "",
     email: "",
     address: "",
+    eventtype: "",
   });
 
-  // Store original data to reset on cancel
   const originalProfile = useRef({});
 
   const [isEditing, setIsEditing] = useState(false);
 
   const fetchProfile = async () => {
+    setLoading(true);
     try {
       const res = await axios.post(
         "/api/caterer/profile",
@@ -54,7 +58,9 @@ const CatererDashboardProfile = () => {
         phone: data.contact || "",
         email: data.email || "",
         address: data.address || "",
+        eventtype: data.eventtype || "", // <-- Added
       };
+
       setProfile(newProfile);
       originalProfile.current = newProfile; // save original data
     } catch (err) {
@@ -62,6 +68,8 @@ const CatererDashboardProfile = () => {
         "Failed to fetch caterer profile:",
         err.response?.data?.error || err.message
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,6 +110,7 @@ const CatererDashboardProfile = () => {
         description: profile.description,
         cateringimage: profile.icon,
         cateringbannerimage: profile.banner,
+        eventtype: profile.eventtype,
       };
 
       const res = await axios.put("/api/caterer/profile", payload, {
@@ -152,52 +161,58 @@ const CatererDashboardProfile = () => {
       animate="visible"
       variants={fadeInUp}
     >
-      <div className="relative">
-        <img
-          src={profile.banner || defaultcatererbanner.src}
-          alt="Banner"
-          className="w-full h-40 object-cover"
-        />
-        <label className="absolute top-3 border border-gray-500 right-3 bg-white p-1 rounded-full shadow cursor-pointer hover:bg-gray-100">
-          <FaPencilAlt className="text-gray-900 w-4 h-4" />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleImageChange(e, "banner")}
-            className="hidden"
-            disabled={!isEditing}
-          />
-        </label>
-
-        {/* Edit/Cancel button below banner top-right */}
-        <button
-          onClick={handleEditToggle}
-          className="absolute right-3 top-[calc(100%+10px)] bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700 font-semibold z-30"
-          type="button"
-        >
-          {isEditing ? "Cancel" : "Edit"}
-        </button>
-
-        <div className="relative left-6 bottom-10 w-32 h-32 rounded-full border-4 border-white bg-gray-200 z-10">
+      {loading ? (
+        <div className="flex justify-center items-center h-[50vh]">
+          <Lottie animationData={loadingicon} loop={true} style={{ height: 50 }} />
+        </div>
+      ) : (
+        <>
+        <div className="relative">
           <img
-            src={profile.icon}
-            alt="Caterer Icon"
-            className="w-full h-full object-cover rounded-full"
+            src={profile.banner || defaultcatererbanner.src}
+            alt="Banner"
+            className="w-full h-40 object-cover"
           />
-          <label className="absolute border border-gray-500 bottom-2 right-0 bg-white p-1 z-20 rounded-full shadow cursor-pointer hover:bg-gray-100">
-            <FaPencilAlt className="text-gray-900 w-5 h-5" />
+          <label className="absolute top-3 border border-gray-500 right-3 bg-white p-1 rounded-full shadow cursor-pointer hover:bg-gray-100">
+            <FaPencilAlt className="text-gray-900 w-4 h-4" />
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => handleImageChange(e, "icon")}
+              onChange={(e) => handleImageChange(e, "banner")}
               className="hidden"
               disabled={!isEditing}
             />
           </label>
-        </div>
-      </div>
 
-      <motion.div className="px-6 pb-6" variants={fadeInUp}>
+          {/* Edit/Cancel button below banner top-right */}
+          <button
+            onClick={handleEditToggle}
+            className="absolute right-3 top-[calc(100%+10px)] bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700 font-semibold z-30"
+            type="button"
+          >
+            {isEditing ? "Cancel" : "Edit"}
+          </button>
+
+          <div className="relative left-6 bottom-10 w-32 h-32 rounded-full border-4 border-white bg-gray-200 z-10">
+            <img
+              src={profile.icon}
+              alt="Caterer Icon"
+              className="w-full h-full object-cover rounded-full"
+            />
+            <label className="absolute border border-gray-500 bottom-2 right-0 bg-white p-1 z-20 rounded-full shadow cursor-pointer hover:bg-gray-100">
+              <FaPencilAlt className="text-gray-900 w-5 h-5" />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, "icon")}
+                className="hidden"
+                disabled={!isEditing}
+              />
+            </label>
+          </div>
+        </div>
+
+        <motion.div className="px-6 pb-6" variants={fadeInUp}>
         <motion.h2
           className="text-2xl font-semibold text-gray-800"
           variants={fadeInUp}
@@ -217,6 +232,7 @@ const CatererDashboardProfile = () => {
           { label: "Phone Number", name: "phone", type: "tel" },
           { label: "Email Address", name: "email", type: "email" },
           { label: "Address", name: "address", type: "text" },
+          { label: "Description", name: "description", type: "text" },
         ].map((field, i) => (
           <motion.div
             className="mb-4"
@@ -228,12 +244,9 @@ const CatererDashboardProfile = () => {
               className="block text-sm text-gray-700"
               htmlFor={field.name}
             >
-              {field.label}{" "}
+              {field.label}
               {(!profile[field.name] || profile[field.name].trim() === "") && (
-                <span
-                  className="text-red-500 ml-1"
-                  title="This field is required"
-                >
+                <span className="text-red-500 ml-1" title="This field is required">
                   ⚠️
                 </span>
               )}
@@ -254,48 +267,49 @@ const CatererDashboardProfile = () => {
           </motion.div>
         ))}
 
-        <motion.div className="mb-6" custom={6} variants={fadeInUp}>
-          <label
-            className="block text-sm text-gray-700"
-            htmlFor="description"
-          >
-            Description{" "}
-            {(!profile.description || profile.description.trim() === "") && (
-              <span
-                className="text-red-500 ml-1"
-                title="This field is required"
-              >
+        <motion.div className="mb-4" custom={7} variants={fadeInUp}>
+          <label className="block text-sm text-gray-700" htmlFor="eventtype">
+            Event Type
+            {(!profile.eventtype || profile.eventtype.trim() === "") && (
+              <span className="text-red-500 ml-1" title="This field is required">
                 ⚠️
               </span>
             )}
           </label>
-          <textarea
-            id="description"
-            name="description"
-            value={profile.description || ""}
+          <select
+            id="eventtype"
+            name="eventtype"
+            value={profile.eventtype}
             onChange={handleProfileChange}
-            rows="4"
             className={`w-full p-3 border rounded-lg text-gray-700 ${
               isEditing
                 ? "border-gray-300"
                 : "border-transparent bg-gray-100 cursor-not-allowed"
             }`}
-            readOnly={!isEditing}
-          />
+            disabled={!isEditing}
+          >
+            <option value="">Select an event type</option>
+            <option value="Wedding">Wedding</option>
+            <option value="Birthday">Birthday</option>
+            <option value="Corporate">Corporate</option>
+            <option value="Festival">Festival</option>
+            <option value="Other">Other</option>
+          </select>
         </motion.div>
 
         {isEditing && (
           <motion.button
             onClick={handleSave}
-            className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700"
+            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-semibold"
             type="button"
-            custom={7}
             variants={fadeInUp}
-            >
+          >
             Save Changes
           </motion.button>
         )}
       </motion.div>
+        </>
+      )}
     </motion.div>
   );
 };

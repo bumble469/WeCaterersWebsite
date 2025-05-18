@@ -1,69 +1,70 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { FiFilter } from "react-icons/fi";
 import Filters from "./components/filters";
 import MenuItemDetailsModal from "./components/detailsmodal";
 import CateringServiceModal from "./components/servicemodal";
+import axios from "axios";
+import { toast } from "react-toastify";
+import Lottie from "lottie-react";
+import loadinglottie from "../../../../assets/images/loadingicon.json";
 
-const menuItems = [
-  {
-    id: 1,
-    name: "Butter Chicken",
-    tagline: "Rich and creamy North Indian delight",
-    image: "/images/butterchicken.jpg",
-    rating: 4.8,
-    price: 250,
-    cuisineType: "Indian",
-    eventType: "Wedding",
-    location: "Delhi",
-  },
-  {
-    id: 2,
-    name: "Veg Biryani",
-    tagline: "Flavored rice with mixed vegetables",
-    image: "/images/vegbiryani.jpg",
-    rating: 4.5,
-    price: 200,
-    cuisineType: "Indian",
-    eventType: "Corporate",
-    location: "Mumbai",
-  },
-  {
-    id: 3,
-    name: "Schezwan Noodles",
-    tagline: "Spicy and tangy Indo-Chinese noodles",
-    image: "/images/schezwannoodles.jpg",
-    rating: 4.3,
-    price: 180,
-    cuisineType: "Chinese",
-    eventType: "Party",
-    location: "Bangalore",
-  },
-  {
-    id: 4,
-    name: "Paneer Tikka",
-    tagline: "Grilled cottage cheese with spices",
-    image: "/images/paneertikka.jpg",
-    rating: 4.9,
-    price: 220,
-    cuisineType: "Indian",
-    eventType: "Festival",
-    location: "Chennai",
-  },
-];
-
-const CateringMenu = () => {
+const CateringMenu = ({cateringid}) => {
+  const [menuItems, setMenuItems] = useState([]);
+  const [services, setServices] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const [filters, setFilters] = useState({
-    priceRange: [0, 1000],
-    rating: 0,
-    cuisineType: "",
+    price: Infinity,
+    rating: null,
+    cuisinetype: "",
+    dietarypreference: "", 
   });
+
+  const [appliedFilters, setAppliedFilters] = useState(filters);
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetchMenuItems();
+    fetchServices();
+  }, []);
+
+  const fetchMenuItems = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`/api/user/home/menu?cateringid=${cateringid}`);
+      if (response.status === 200) {
+        setMenuItems(response.data);
+      } else {
+        toast.error("Could not fetch menu items!");
+      }
+    } catch (err) {
+      console.log("Error fetching menu: ", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchServices = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`/api/user/home/services?cateringid=${cateringid}`);
+      if (response.status === 200) {
+        setServices(response.data);
+      } else {
+        toast.error("Could not fetch services!");
+      }
+    } catch (err) {
+      console.log("Error fetching services: ", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openModal = (item) => {
     setSelectedItem(item);
@@ -76,16 +77,35 @@ const CateringMenu = () => {
   };
 
   const filteredItems = menuItems.filter((item) => {
-    const meetsPrice =
-      item.price >= filters.priceRange[0] &&
-      item.price <= filters.priceRange[1];
-    const meetsRating = item.rating >= filters.rating;
-    const meetsCuisine = filters.cuisineType
-      ? item.cuisineType.toLowerCase().includes(filters.cuisineType.toLowerCase())
+    const maxPrice = appliedFilters.price ?? Infinity;
+    const meetsPrice = item.price <= maxPrice;
+
+    const meetsRating =
+      appliedFilters.rating === null || (item.rating ?? 0) >= appliedFilters.rating;
+
+    const meetsCuisine = appliedFilters.cuisinetype
+      ? item.cuisinetype?.toLowerCase().includes(appliedFilters.cuisinetype.toLowerCase())
+      : true;
+    
+    const meetsDietary = appliedFilters.dietarypreference
+      ? item.dietarypreference === appliedFilters.dietarypreference
       : true;
 
-    return meetsPrice && meetsRating && meetsCuisine;
+    return meetsPrice && meetsRating && meetsCuisine && meetsDietary;
   });
+
+
+  const applyFilters = () => {
+    setAppliedFilters(filters);
+    setShowFilters(false);
+  };
+
+  const resetFilters = () => {
+    const defaults = { price: null, rating: null, cuisinetype: "" , dietarypreference:""};
+    setFilters(defaults);
+    setAppliedFilters(defaults);
+  };
+
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
@@ -99,33 +119,6 @@ const CateringMenu = () => {
     setIsServiceModalOpen(false);
     setSelectedService(null);
   };
-
-  const services = [
-    {
-      title: "Wedding Catering",
-      description: "Delicious multi-course meals tailored for weddings with customizable menus and full service staff.",
-      price: "$3000",
-      capacity: "Up to 200 guests",
-    },
-    {
-      title: "Corporate Events",
-      description: "Professional catering for conferences, seminars, and office gatherings with timely delivery and setup.",
-      price: "$3000",
-      capacity: "Up to 200 guests",
-    },
-    {
-      title: "Birthday Parties",
-      description: "Fun and themed catering for all age groups with snacks, beverages, and cakes included.",
-      price: "$3000",
-      capacity: "Up to 200 guests",
-    },
-    {
-      title: "Festival Specials",
-      description: "Traditional and festive meals celebrating cultural occasions with authentic flavors.",
-      price: "$3000",
-      capacity: "Up to 200 guests",
-    },
-  ];
 
   return (
     <>
@@ -150,7 +143,7 @@ const CateringMenu = () => {
               className="bg-white border border-blue-500 text-blue-700 px-4 py-2 rounded-sm flex items-center gap-2 hover:bg-blue-100 hover:shadow transition-all"
               onClick={() => openServiceModal(service)} // <-- Add this line
             >
-              <span className="font-medium text-sm md:text-base">{service.title}</span>
+              <span className="font-medium text-sm md:text-base">{service.name}</span>
             </div>
           ))}
         </div>
@@ -189,6 +182,8 @@ const CateringMenu = () => {
                   <Filters
                     filters={filters}
                     setFilters={setFilters}
+                    applyFilters={applyFilters}
+                    resetFilters={resetFilters}
                   />
                 </motion.div>
               )}
@@ -198,6 +193,8 @@ const CateringMenu = () => {
               <Filters
                 filters={filters}
                 setFilters={setFilters}
+                applyFilters={applyFilters}
+                resetFilters={resetFilters}
               />
             </div>
           </div>
@@ -205,62 +202,74 @@ const CateringMenu = () => {
           {/* Menu Cards */}
           <motion.div
             layout
-            className="md:w-3/4 w-full p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto custom-scrollbar"
+            className="md:w-3/4 w-full p-4 overflow-y-auto custom-scrollbar"
             style={{ maxHeight: "calc(100vh - 2rem)" }}
           >
-            {filteredItems.length === 0 ? (
-              <p className="w-full text-center text-lg text-gray-600">
-                No menu items found.
-              </p>
+            { loading ? (
+              <div className="flex items-center justify-center h-full min-h-[400px]">
+                <Lottie
+                  animationData={loadinglottie}
+                  loop={true}
+                  style={{ width: 50, height: 50 }}
+                />
+              </div>
+            ) : filteredItems.length === 0 ? (
+                <p className="w-full text-center text-lg text-gray-600">
+                  No menu items found.
+                </p>
             ) : (
-              filteredItems.map((item) => (
-                <motion.div
-                  key={item.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="bg-white max-h-95 rounded-lg shadow hover:shadow-xl transition flex flex-col"
-                >
-                  <div className="relative">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={400}
-                      height={250}
-                      className="rounded-t-lg object-cover w-full h-48"
-                    />
-                    {item.rating > 4.7 && (
-                      <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-semibold text-white px-2 py-1 rounded">
-                        Top Rated
-                      </span>
-                    )}
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredItems.map((item)=>{
+                  return(
+                    <motion.div
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.4 }}
+                      className="bg-white max-h-95 rounded-lg shadow hover:shadow-xl transition flex flex-col"
+                    >
+                      <div className="relative">
+                        <Image
+                          src={item.image_data}
+                          alt={item.name}
+                          width={400}
+                          height={250}
+                          className="rounded-t-lg object-cover w-full h-48"
+                        />
+                        {item?.rating > 4.7 && (
+                          <span className="absolute top-2 left-2 bg-yellow-400 text-xs font-semibold text-white px-2 py-1 rounded">
+                            Top Rated
+                          </span>
+                        )}
+                      </div>
 
-                  <div className="p-4 flex flex-col justify-between flex-grow">
-                    <div>
-                      <h3 className="text-lg font-semibold">{item.name}</h3>
-                      <p className="text-sm italic text-gray-600">{item.tagline}</p>
-                      <p className="text-sm mt-1">⭐ {item.rating} | ₹{item.price}/plate</p>
-                    </div>
+                      <div className="p-4 flex flex-col justify-between flex-grow">
+                        <div>
+                          <h3 className="text-lg font-semibold">{item.name}</h3>
+                          <p className="text-sm italic text-gray-600">{item.description}</p>
+                          <p className="text-sm mt-1">⭐ {item.rating} | ₹{item.price}</p>
+                        </div>
 
-                    <div className="mt-auto pt-4 flex justify-between gap-2">
-                      <button
-                        className="bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 transition flex-1"
-                        onClick={() => openModal(item)}
-                      >
-                        View Details
-                      </button>
-                      <button
-                        className="bg-green-600 text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1"
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
+                        <div className="mt-auto pt-4 flex justify-between gap-2">
+                          <button
+                            className="bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 transition flex-1"
+                            onClick={() => openModal(item)}
+                          >
+                            View Details
+                          </button>
+                          <button
+                            className="bg-green-600 text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1"
+                          >
+                            Add to Cart
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
             )}
           </motion.div>
         </motion.div>

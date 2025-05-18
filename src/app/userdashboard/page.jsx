@@ -18,7 +18,7 @@ import CateringMenu from "./components/cateringmenu/menu";
 
 const Caterers = () => {
   const [activeTab, setActiveTab] = useState("home");
-  const [selectedOrderCaterer, setSelectedOrderCaterer] = useState({});
+  const [selectedOrderCaterer, setSelectedOrderCaterer] = useState(null);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -31,7 +31,7 @@ const Caterers = () => {
       case "profile":
         return <UserProfile />;
       case "menu":
-        return <CateringMenu />
+        return <CateringMenu cateringid={selectedOrderCaterer.cateringid} />
       default:
         return null;
     }
@@ -52,7 +52,16 @@ const Caterers = () => {
           <div className="relative w-full h-[400px]">
             <motion.div
               className="absolute inset-0 bg-fixed bg-center bg-cover bg-no-repeat z-0"
-              style={{ backgroundImage: `url(${explorepageimage.src})` }}
+              style={{
+                backgroundImage: `url(${
+                  activeTab === "menu"
+                    ? selectedOrderCaterer?.cateringbannerimage || explorepageimage.src
+                    : explorepageimage.src
+                })`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1 }}
@@ -77,9 +86,9 @@ const Caterers = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1 }}
             >
-              {selectedOrderCaterer && selectedOrderCaterer.name ? (
+              {selectedOrderCaterer && selectedOrderCaterer.cateringname ? (
                 <h2 className="text-xl md:text-3xl lg:text-5xl font-bold">
-                  Explore catering from {selectedOrderCaterer.name}
+                  Explore catering from {selectedOrderCaterer.cateringname}
                 </h2>
               ) : (
                 <h2 className="text-xl md:text-3xl lg:text-5xl font-bold">

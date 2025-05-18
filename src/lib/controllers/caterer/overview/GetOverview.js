@@ -8,36 +8,31 @@ function getImageMimeType(buffer) {
 
   const header = buffer.slice(0, 4).toString('hex').toUpperCase();
 
-  if (header.startsWith('89504E47')) return 'image/png';       
-  if (header.startsWith('FFD8FFDB') || header.startsWith('FFD8FFE0') || header.startsWith('FFD8FFE1')) return 'image/jpeg';  // JPEG
-  if (header.startsWith('47494638')) return 'image/gif';       
-  if (header.startsWith('424D')) return 'image/bmp';           
+  if (header.startsWith('89504E47')) return 'image/png';
+  if (header.startsWith('FFD8FF')) return 'image/jpeg';
+  if (header.startsWith('47494638')) return 'image/gif';
+  if (header.startsWith('424D')) return 'image/bmp';
 
   return 'application/octet-stream';
 }
 
-export const getCatererProfile = async (token) => {
+export const getCatererOverview = async (token) => {
   if (!token) {
     return { status: 401, data: { error: 'Authorization token is required!' } };
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     const caterer = await prisma.caterer.findUnique({
       where: {
-        cateringid: BigInt(decoded.cateringid),
+        cateringid: parseInt(decoded.cateringid),
       },
       select: {
         cateringid: true,
         cateringname: true,
-        ownername: true,
-        email: true,
-        contact: true,
-        address: true,
         description: true,
         cateringimage: true,
-        cateringbannerimage: true,
-        eventtype:true
       },
     });
 
@@ -57,23 +52,32 @@ export const getCatererProfile = async (token) => {
     };
 
     const cateringImageBuffer = toBuffer(caterer.cateringimage);
-    const cateringBannerImageBuffer = toBuffer(caterer.cateringbannerimage);
 
     const cateringimageBase64 = cateringImageBuffer
       ? `data:${getImageMimeType(cateringImageBuffer)};base64,${cateringImageBuffer.toString('base64')}`
       : null;
 
-    const cateringbannerimageBase64 = cateringBannerImageBuffer
-      ? `data:${getImageMimeType(cateringBannerImageBuffer)};base64,${cateringBannerImageBuffer.toString('base64')}`
-      : null;
+    const serviceCount = await prisma.service.count({
+      where: {
+        cateringid: parseInt(decoded.cateringid),
+      },
+    });
+
+    const menuItemCount = await prisma.menu.count({
+      where: {
+        cateringid: parseInt(decoded.cateringid),
+      },
+    });
 
     return {
       status: 200,
       data: {
-        ...caterer,
         cateringid: caterer.cateringid.toString(),
+        cateringname: caterer.cateringname,
+        description: caterer.description,
         cateringimage: cateringimageBase64,
-        cateringbannerimage: cateringbannerimageBase64,
+        serviceCount,
+        menuItemCount,
       },
     };
 

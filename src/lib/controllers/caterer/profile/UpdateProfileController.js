@@ -3,7 +3,18 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const updateCatererProfile = async (token,cateringname,ownername,contact,email,address,description,cateringimage,cateringbannerimage) => {
+export const updateCatererProfile = async (
+  token,
+  cateringname,
+  ownername,
+  contact,
+  email,
+  address,
+  description,
+  cateringimage,
+  cateringbannerimage,
+  eventtype 
+) => {
   if (!token) {
     return { status: 401, data: { error: 'Authorization token is required!' } };
   }
@@ -11,13 +22,13 @@ export const updateCatererProfile = async (token,cateringname,ownername,contact,
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const dataToUpdate = {};
-
     if (cateringname !== undefined && cateringname !== null) dataToUpdate.cateringname = cateringname;
     if (ownername !== undefined && ownername !== null) dataToUpdate.ownername = ownername;
     if (contact !== undefined && contact !== null) dataToUpdate.contact = contact;
     if (email !== undefined && email !== null) dataToUpdate.email = email;
     if (address !== undefined && address !== null) dataToUpdate.address = address;
     if (description !== undefined && description !== null) dataToUpdate.description = description;
+    if (eventtype !== undefined && eventtype !== null) dataToUpdate.eventtype = eventtype;
 
     if (cateringimage) {
       const base64Image = cateringimage.split(',')[1] || cateringimage;

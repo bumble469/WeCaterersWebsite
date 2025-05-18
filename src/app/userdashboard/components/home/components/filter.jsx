@@ -6,15 +6,15 @@ const Filters = ({ filters, setFilters, applyFilters, resetFilters }) => (
     <div className="mb-5">
       <label className="block text-sm font-semibold mb-2 text-gray-700">🎪 Event Type</label>
       <select 
-        value={filters.eventType}
-        onChange={(e) => setFilters(prev => ({ ...prev, eventType: e.target.value }))}
+        value={filters.eventtype}
+        onChange={(e) => setFilters(prev => ({ ...prev, eventtype: e.target.value }))}
         className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
         <option value="All">All</option>
         <option value="Wedding">Wedding</option>
         <option value="Corporate">Corporate</option>
         <option value="Birthday">Birthday</option>
         <option value="Buffet">Buffet</option>
-        <option value="Festivals">Festivals</option>
+        <option value="Festival">Festival</option>
       </select>
     </div>
 

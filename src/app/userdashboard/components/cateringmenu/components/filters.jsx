@@ -6,11 +6,11 @@ const Filters = ({ filters, setFilters, applyFilters, resetFilters }) => (
     <div className="mb-5">
       <label className="block text-sm font-semibold mb-2 text-gray-700">🍽️ Cuisine Type</label>
       <select 
-        value={filters.cuisineType}
-        onChange={(e) => setFilters(prev => ({ ...prev, cuisineType: e.target.value }))}
+        value={filters.cuisinetype}
+        onChange={(e) => setFilters(prev => ({ ...prev, cuisinetype: e.target.value === "All" ? "" : e.target.value }))}
         className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
         <option value="All">All</option>
-        <option value="Indian">Indian</option>
+        <option value="North Indian">North Indian</option>
         <option value="Chinese">Chinese</option>
         <option value="Italian">Italian</option>
         <option value="Mexican">Mexican</option>
@@ -22,27 +22,38 @@ const Filters = ({ filters, setFilters, applyFilters, resetFilters }) => (
     <div className="mb-5">
       <label className="block text-sm font-semibold mb-2 text-gray-700">⭐ Rating</label>
       <select 
-        value={filters.rating}
-        onChange={(e) => setFilters(prev => ({ ...prev, rating: e.target.value }))}
+        value={filters.rating === null ? "All" : filters.rating}
+        onChange={(e) => {
+          const val = e.target.value;
+          setFilters(prev => ({ ...prev, rating: val === "All" ? null : parseInt(val) }));
+        }}
         className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
         <option value="All">All</option>
-        <option value="4 stars & above">4 stars & above</option>
-        <option value="3 stars & above">3 stars & above</option>
-        <option value="Below 3 stars">Below 3 stars</option>
+        <option value="4">4 stars & above</option>
+        <option value="3">3 stars & above</option>
+        <option value="0">Below 3 stars</option>
       </select>
     </div>
 
-    {/* Price */}
     <div className="mb-5">
-      <label className="block text-sm font-semibold mb-2 text-gray-700">💰 Price Range</label>
-      <select 
-        value={filters.price}
-        onChange={(e) => setFilters(prev => ({ ...prev, price: e.target.value }))}
-        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <label className="block text-sm font-semibold mb-2 text-gray-700">💰 Price (Max)</label>
+      <select
+        value={filters.price === null ? "All" : filters.price.toString()}
+        onChange={(e) => {
+          const val = e.target.value;
+          setFilters(prev => ({
+            ...prev,
+            price: val === "All" ? null : parseInt(val),
+          }));
+        }}
+        className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      >
         <option value="All">All</option>
-        <option value="₹200 - ₹500">₹200 - ₹500</option>
-        <option value="₹500 - ₹1000">₹500 - ₹1000</option>
-        <option value="₹1000+">₹1000+</option>
+        <option value="200">₹200</option>
+        <option value="300">₹300</option>
+        <option value="500">₹500</option>
+        <option value="1000">₹1000</option>
+        <option value="1500">₹1500</option>
       </select>
     </div>
 
@@ -50,12 +61,12 @@ const Filters = ({ filters, setFilters, applyFilters, resetFilters }) => (
     <div className="mb-5">
       <label className="block text-sm font-semibold mb-2 text-gray-700">🥗 Dietary Preference</label>
       <select 
-        value={filters.dietaryPreference}
-        onChange={(e) => setFilters(prev => ({ ...prev, dietaryPreference: e.target.value }))}
+        value={filters.dietarypreference}
+        onChange={(e) => setFilters(prev => ({ ...prev, dietarypreference: e.target.value === "All" ? "" : e.target.value }))}
         className="w-full border border-gray-300 rounded px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
         <option value="All">All</option>
         <option value="Vegetarian">Vegetarian</option>
-        <option value="Non-Vegetarian">Non-Vegetarian</option>
+        <option value="Non-vegetarian">Non-vegetarian</option>
         <option value="Vegan">Vegan</option>
       </select>
     </div>

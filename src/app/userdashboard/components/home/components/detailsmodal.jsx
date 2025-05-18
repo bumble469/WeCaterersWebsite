@@ -1,18 +1,21 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const CatererDetailsModal = ({ caterer, isOpen, onClose }) => {
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [ratingApplied, setRatingApplied] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
-      // Disable body scroll when the modal is open
       document.body.style.overflow = 'hidden';
     } else {
-      // Re-enable body scroll when the modal is closed
       document.body.style.overflow = 'auto';
+      setUserRating(0);
+      setHoverRating(0);
+      setRatingApplied(false);
     }
-
-    // Cleanup when the component unmounts
     return () => {
       document.body.style.overflow = 'auto';
     };
@@ -20,12 +23,32 @@ const CatererDetailsModal = ({ caterer, isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  const Star = ({ index }) => {
+    const fill = (hoverRating || userRating) >= index ? 'text-yellow-400' : 'text-gray-300';
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className={`h-6 w-6 cursor-pointer ${ratingApplied ? 'cursor-default' : ''} ${fill}`}
+        fill="currentColor"
+        viewBox="0 0 20 20"
+        onClick={() => !ratingApplied && setUserRating(index)}
+        onMouseEnter={() => !ratingApplied && setHoverRating(index)}
+        onMouseLeave={() => !ratingApplied && setHoverRating(0)}
+      >
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.97a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.286 3.97c.3.921-.755 1.688-1.54 1.118L10 13.347l-3.38 2.455c-.785.57-1.84-.197-1.54-1.118l1.286-3.97a1 1 0 00-.364-1.118L3.622 9.397c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.286-3.97z" />
+      </svg>
+    );
+  };
+
+  const handleApplyRating = () => {
+    // Here you can add your API call or logic to save the rating
+    setRatingApplied(true);
+  };
+
   return (
     <>
-      {/* Background overlay with slight blur and no interaction */}
       <div className="fixed inset-0 backdrop-blur-[1px] z-50 pointer-events-auto" />
-      
-      {/* Modal content */}
+
       <motion.div
         className="fixed inset-0 flex justify-center items-center z-50 pointer-events-auto"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -33,33 +56,57 @@ const CatererDetailsModal = ({ caterer, isOpen, onClose }) => {
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-6 relative">
-          {/* Close button */}
+        <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-6 relative max-h-[90vh] overflow-y-auto">
           <button
             className="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-red-500 text-2xl font-bold transition duration-200"
             onClick={onClose}
           >
             &times;
           </button>
-          
-          {/* Modal Content */}
+
           <div className="flex items-center space-x-6">
-            {/* Left Image */}
             <img
-              src={caterer.image}
-              alt={caterer.name}
+              src={caterer.cateringimage}
+              alt={caterer.cateringname}
               className="w-48 h-48 object-cover rounded-full"
             />
 
-            {/* Right Details */}
             <div className="flex-1">
-              <h2 className="text-2xl font-semibold text-gray-800">{caterer.name}</h2>
-              <p className="text-sm italic text-gray-600">{caterer.tagline}</p>
-              <p className="text-sm text-gray-500 mt-2">⭐ {caterer.rating} | Starting from {caterer.price}</p>
-              
+              <h2 className="text-2xl font-semibold text-gray-800">{caterer.cateringname}</h2>
+              <p className="text-sm italic text-gray-600">{caterer.description}</p>
+              <p className="text-sm text-gray-500 mt-2">
+                ⭐ {caterer?.rating} | Price range &#8377;{caterer.pricerange.split("-")[0]} - &#8377;{caterer.pricerange.split("-")[1]}
+              </p>
+
               <div className="mt-4 text-gray-700">
-                <h3 className="text-lg font-semibold">Event Type: {caterer.eventType}</h3>
-                <p className="text-sm">{caterer.location}</p>
+                <h3 className="text-lg font-semibold">
+                  Dedicated to Exceptional {caterer.eventtype} Experiences
+                </h3>
+                <p className="text-sm">Serving from: {caterer.address}</p>
+              </div>
+
+              <div className="mt-6">
+                <h4 className="text-md font-semibold mb-1 text-gray-500">Rate this Catering Service:</h4>
+                <div className="flex space-x-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} index={star} />
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleApplyRating}
+                  disabled={userRating === 0 || ratingApplied}
+                  className={`mt-3 px-4 py-2 rounded bg-blue-600 text-white font-semibold transition 
+                    disabled:bg-gray-400 disabled:cursor-not-allowed`}
+                >
+                  {ratingApplied ? 'Rating Applied' : 'Rate'}
+                </button>
+
+                {ratingApplied && (
+                  <p className="mt-2 text-sm text-green-600">
+                    Thank you for rating {userRating} star{userRating > 1 ? 's' : ''}!
+                  </p>
+                )}
               </div>
             </div>
           </div>
