@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import Lottie from "lottie-react";
 import loadinglottie from "../../../../assets/images/loadingicon.json";
 
-const CateringMenu = ({cateringid}) => {
+const CateringMenu = ({cateringid, addToCart}) => {
   const [menuItems, setMenuItems] = useState([]);
   const [services, setServices] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -34,10 +34,18 @@ const CateringMenu = ({cateringid}) => {
     fetchServices();
   }, []);
 
+  const handleAdd = (item) => {
+    addToCart(item);
+  };
+
   const fetchMenuItems = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/user/home/menu?cateringid=${cateringid}`);
+      let response = await axios.get(`/api/user/home/menu?cateringid=${cateringid}`);
+      if (response.status === 401) {
+        await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+        response = await axios.get(`/api/user/home/menu?cateringid=${cateringid}`); // retry once
+      }
       if (response.status === 200) {
         setMenuItems(response.data);
       } else {
@@ -53,7 +61,11 @@ const CateringMenu = ({cateringid}) => {
   const fetchServices = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/user/home/services?cateringid=${cateringid}`);
+      let response = await axios.get(`/api/user/home/services?cateringid=${cateringid}`);
+      if (response.status === 401) {
+        await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+        response = await axios.get(`/api/user/home/services?cateringid=${cateringid}`); // retry once
+      }
       if (response.status === 200) {
         setServices(response.data);
       } else {
@@ -66,58 +78,92 @@ const CateringMenu = ({cateringid}) => {
     }
   };
 
+
   const AddToCart = async (item) => {
     const cartItem = {
       cateringid,
       menuid: item.menuid || null,
-      serviceid: null,  
+      serviceid: null,
       quantity: item.quantity || 1,
     };
 
     try {
-      const response = await axios.post('/api/user/cart', cartItem, { withCredentials: true });
+      let response = await axios.post('/api/user/cart', cartItem, { withCredentials: true });
+
       if (response.status === 200) {
-        toast.success("Item added to cart!",{
-          autoClose:1000,
-          hideProgressBar: true,    
+        toast.success("Item added to cart!", {
+          autoClose: 1000,
+          hideProgressBar: true,
           closeOnClick: true,
           pauseOnHover: false,
           draggable: false,
-          progress: undefined, 
+          progress: undefined,
         });
       } else {
-        toast.error("Could not add item to cart!",{
-          autoClose:1000,
-          hideProgressBar: true,    
+        toast.error("Could not add item to cart!", {
+          autoClose: 1000,
+          hideProgressBar: true,
           closeOnClick: true,
           pauseOnHover: false,
           draggable: false,
-          progress: undefined, 
+          progress: undefined,
         });
       }
+
     } catch (err) {
-      console.error("Error while adding to cart! ", err.message || response.message);
-      if(err.status == 409){
-        toast.error("Item already in cart!.", err,{
-          autoClose:1000,
-          hideProgressBar: true,    
+      const status = err.response?.status;
+
+      if (status === 401) {
+        try {
+          await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+          const retryResponse = await axios.post('/api/user/cart', cartItem, { withCredentials: true });
+          if (retryResponse.status === 200) {
+            toast.success("Item added to cart!", {
+              autoClose: 1000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: false,
+              draggable: false,
+              progress: undefined,
+            });
+          } else {
+            toast.error("Could not add item to cart!", {
+              autoClose: 1000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: false,
+              draggable: false,
+              progress: undefined,
+            });
+          }
+        } catch (refreshErr) {
+          console.error("Error refreshing token:", refreshErr.message);
+          toast.error("Session expired. Please log in again.");
+        }
+
+      } else if (status === 409) {
+        toast.error("Item already in cart!", {
+          autoClose: 1000,
+          hideProgressBar: true,
           closeOnClick: true,
           pauseOnHover: false,
           draggable: false,
-          progress: undefined, 
+          progress: undefined,
         });
-      }else{
-        toast.error("Error adding item to cart.", err,{
-          autoClose:1000,
-          hideProgressBar: true,    
+      } else {
+        console.error("Error while adding to cart!", err.message);
+        toast.error("Error adding item to cart.", {
+          autoClose: 1000,
+          hideProgressBar: true,
           closeOnClick: true,
           pauseOnHover: false,
           draggable: false,
-          progress: undefined, 
-      });
+          progress: undefined,
+        });
       }
     }
   };
+
 
   const openModal = (item) => {
     setSelectedItem(item);
@@ -175,12 +221,11 @@ const CateringMenu = ({cateringid}) => {
 
   return (
     <>
-      {/* MODAL */}
       {selectedItem && (
         <MenuItemDetailsModal item={selectedItem} isOpen={isModalOpen} onClose={closeModal} />
       )}
       {selectedService && (
-        <CateringServiceModal serviceDetails={selectedService} isOpen={isServiceModalOpen} onClose={closeServiceModal} />
+        <CateringServiceModal serviceDetails={selectedService} isOpen={isServiceModalOpen} onClose={closeServiceModal} handleAdd={handleAdd} />
       )}
 
       {/* READILY AVAILABLE SERVICES BAR */}
@@ -313,7 +358,10 @@ const CateringMenu = ({cateringid}) => {
                             View Details
                           </button>
                           <button
-                            onClick={() => AddToCart(item)}
+                            onClick={() => {
+                              AddToCart(item)
+                              handleAdd(item)
+                            }}
                             className="bg-green-600 cursor-pointer text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1"
                           >
                             Add to Cart

@@ -19,19 +19,21 @@ import CateringMenu from "./components/cateringmenu/menu";
 const Caterers = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedOrderCaterer, setSelectedOrderCaterer] = useState(null);
+  const [cartItems, setCartItems] = useState([]); 
+  const cartContainsItems = cartItems.length > 0;
 
   const renderContent = () => {
     switch (activeTab) {
       case "home":
         return <UserHome setSelectedOrderCaterer={setSelectedOrderCaterer} setActiveTab={setActiveTab} />;
       case "cart":
-        return <UserCart />;
+        return <UserCart cartItems={cartItems} removeFromCart={(item) => setCartItems(prev => prev.filter(i => i.id !== item.id))} />;
       case "orders":
         return <UserOrders />;
       case "profile":
         return <UserProfile />;
       case "menu":
-        return <CateringMenu cateringid={selectedOrderCaterer.cateringid} />
+        return <CateringMenu cateringid={selectedOrderCaterer.cateringid} addToCart={(item) => setCartItems([...cartItems, item])} />
       default:
         return null;
     }
@@ -42,7 +44,7 @@ const Caterers = () => {
     { name: "Cart",route: '#', tab: "cart", icon: <FaShoppingCart /> },
     { name: "Orders",route: '#', tab: "orders", icon: <FaClipboardList /> },
     { name: "Profile",route: '#', tab: "profile", icon: <FaUser /> },
-    { name: "Logout", route: "/", icon: <FaSignOutAlt /> }
+    { name: "Logout", route: "#", icon: <FaSignOutAlt />, type:"user" }
   ];
 
   return (
@@ -103,7 +105,7 @@ const Caterers = () => {
           </div>
         )}
 
-        <Header links={links} setActiveTab={setActiveTab} activeTab={activeTab} />
+        <Header links={links} setActiveTab={setActiveTab} activeTab={activeTab} cartContains={cartContainsItems} />
       </div>
 
       <div className="h-screen">

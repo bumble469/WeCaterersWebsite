@@ -8,8 +8,9 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const cateringid = searchParams.get("cateringid");
 
-    const { status, formattedServices } = await getCatererService(token, cateringid);
-    return NextResponse.json(formattedServices, { status });
+    const { status, data } = await getCatererService(token, cateringid);
+
+    return NextResponse.json(data, { status });
   } catch (err) {
     console.error("API error:", err.message);
     return NextResponse.json(

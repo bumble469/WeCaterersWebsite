@@ -10,14 +10,15 @@ export async function POST(req) {
     const { cateringid, menuid, serviceid, quantity } = body;
     const token = req.cookies.get("usertoken")?.value;
 
-    const { status, message } = await addToCart(token, cateringid, menuid, serviceid, quantity);
+    const { status, data } = await addToCart(token, cateringid, menuid, serviceid, quantity);
 
-    return NextResponse.json(message, { status });
+    return NextResponse.json(data, { status });
   } catch (err) {
     console.error("API error: ", err.message);
     return NextResponse.json({ error: "Internal server error!" }, { status: 500 });
   }
 }
+
 
 export async function GET(req) {
   try {

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const CateringServiceModal = ({ isOpen, onClose, serviceDetails }) => {
+const CateringServiceModal = ({ isOpen, onClose, serviceDetails, handleAdd }) => {
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -26,50 +26,91 @@ const CateringServiceModal = ({ isOpen, onClose, serviceDetails }) => {
             serviceid: serviceDetails?.serviceId, 
             quantity: 1,
         };
+
         try {
             const response = await axios.post('/api/user/cart', cartItem, { withCredentials: true });
+
             if (response.status === 200) {
-                toast.success("Service added to cart!", {
-                    autoClose:1000,
-                    hideProgressBar: true,    
-                    closeOnClick: true,
-                    pauseOnHover: false,
-                    draggable: false,
-                    progress: undefined,
-                });
+            toast.success("Service added to cart!", {
+                autoClose: 1000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: false,
+                progress: undefined,
+            });
+            handleAdd?.(cartItem);
             } else {
-                toast.error("Could not add service to cart!",{
-                    autoClose:1000,
-                    hideProgressBar: true,    
-                    closeOnClick: true,
-                    pauseOnHover: false,
-                    draggable: false,
-                    progress: undefined,
-                });
+            toast.error("Could not add service to cart!", {
+                autoClose: 1000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: false,
+                progress: undefined,
+            });
             }
         } catch (err) {
+            if (err.response?.status === 401) {
+            try {
+                const refreshResponse = await axios.post('/api/auth/user/refreshtoken', {}, { withCredentials: true });
+                if (refreshResponse.status === 200) {
+                try {
+                    const retryResponse = await axios.post('/api/user/cart', cartItem, { withCredentials: true });
+                    if (retryResponse.status === 200) {
+                    toast.success("Service added to cart!", {
+                        autoClose: 1000,
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: false,
+                        draggable: false,
+                        progress: undefined,
+                    });
+                    handleAdd?.(cartItem);
+                    return;
+                    }
+                } catch (retryErr) {
+                    console.error("Retry after token refresh failed:", retryErr);
+                }
+                }
+            } catch (refreshErr) {
+                console.error("Token refresh failed:", refreshErr);
+            }
+
+            toast.error("Session expired. Please login again.", {
+                autoClose: 2000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: false,
+                progress: undefined,
+            });
+            // Optionally redirect to login page here:
+            // router.push('/login');
+
+            } else if (err.response?.status === 409) {
+            toast.error("Service already in cart!", {
+                autoClose: 1000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: false,
+                progress: undefined,
+            });
+            } else {
+            toast.error("Error adding service to cart!", {
+                autoClose: 1000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: false,
+                progress: undefined,
+            });
             console.error("Error while adding service to cart:", err.message);
-            if(err.status == 409){
-                toast.error("Service already in cart!", {
-                    autoClose:1000,
-                    hideProgressBar: true,    
-                    closeOnClick: true,
-                    pauseOnHover: false,
-                    draggable: false,
-                    progress: undefined,
-                });
-            }else{
-                toast.error("Error adding service to cart!", {
-                    autoClose:1000,
-                    hideProgressBar: true,    
-                    closeOnClick: true,
-                    pauseOnHover: false,
-                    draggable: false,
-                    progress: undefined,
-                });
             }
         }
-    };
+        };
+
 
 
     return (

@@ -18,10 +18,18 @@ export async function POST(req) {
       { status }
     );
 
-    response.cookies.set("usertoken", data.usertoken, {
+    response.cookies.set("usertoken", data.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60,
+      secure: true,
+      maxAge: 2 * 60, 
+      sameSite: "lax",
+      path: "/",
+    });
+
+    response.cookies.set("refreshtoken", data.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60, 
       sameSite: "lax",
       path: "/",
     });

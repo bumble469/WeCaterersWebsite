@@ -8,8 +8,6 @@ export const addMenu = async (token, name, description, price, cuisinetype, diet
     return { status: 401, data: { error: 'Authorization token is required!' } };
   }
 
-  console.log('Received image string:', image ? image.substring(0, 30) + '...' : 'No image'); // Debug first part of image string
-
   try {
     const secret = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secret);

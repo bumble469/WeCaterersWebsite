@@ -32,7 +32,7 @@ export const deleteCartItem = async (token, cartid, menuid, serviceid) => {
 
     return {
       status: 200,
-      message: "Item removed from cart!",
+      data:{ message: "Item removed from cart!" },
     };
 
   } catch (err) {

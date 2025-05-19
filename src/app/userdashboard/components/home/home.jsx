@@ -25,16 +25,39 @@ const UserHome = ({ setSelectedOrderCaterer, setActiveTab }) => {
 
   const fetchCaterers = async () => {
     setLoading(true);
+    const getCaterers = async () => {
+      return await axios.get("/api/user/home/caterers", { withCredentials: true });
+    };
     try {
-      const response = await axios.get("/api/user/home/caterers", { withCredentials: true });
+      let response = await getCaterers();
+
+      if (response.status === 401) {
+        await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+        response = await getCaterers();
+      }
       if (response.status === 200) {
-        setCaterers(response.data);
+        setCaterers(response.data.data);
       } else {
         toast.error("Error fetching caterers!");
       }
     } catch (err) {
-      console.log("Error fetching caterers: ", err.message);
-      toast.error("Failed to fetch caterers");
+      if (err.response && err.response.status === 401) {
+        try {
+          await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+          const retryResponse = await getCaterers();
+          if (retryResponse.status === 200) {
+            setCaterers(retryResponse.data.data);
+            return;
+          } else {
+            toast.error("Error fetching caterers after token refresh!");
+          }
+        } catch (refreshErr) {
+          toast.error("Session expired. Please login again.");
+          console.log("Token refresh failed:", refreshErr.message);
+        }
+      } else {
+        console.log("Error fetching caterers:", err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -42,7 +65,7 @@ const UserHome = ({ setSelectedOrderCaterer, setActiveTab }) => {
 
   useEffect(() => {
     fetchCaterers();
-  }, []);
+  }, [setActiveTab]);
 
   useEffect(() => {
     setFilteredCaterers(caterers);
@@ -198,13 +221,13 @@ const UserHome = ({ setSelectedOrderCaterer, setActiveTab }) => {
                       <div className="flex justify-between mt-4 gap-2">
                         <button
                           onClick={() => handleViewDetails(caterer)}
-                          className="bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 transition flex-1"
+                          className="bg-blue-600 cursor-pointer text-white text-sm py-2 px-4 rounded hover:bg-blue-700 transition flex-1"
                         >
                           View Details
                         </button>
                         <button
                           onClick={() => handleSelectedCaterer(caterer)}
-                          className="bg-green-600 text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1"
+                          className="bg-green-600 cursor-pointer text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1"
                         >
                           Order From
                         </button>

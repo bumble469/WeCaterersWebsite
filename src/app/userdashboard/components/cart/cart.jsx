@@ -10,21 +10,19 @@ import { toast } from 'react-toastify';
 
 const TAX_RATE = 0.05;
 
-const UserCart = () => {
+const UserCart = ({removeFromCart}) => {
   const [cart, setCart] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   async function fetchCart() {
     try {
-      const res = await fetch('/api/user/cart', {
-        method: 'GET',
+      let res = await axios.get('/api/user/cart', {
+        withCredentials: true,  // send cookies
         headers: { 'Content-Type': 'application/json' },
       });
 
-      if (!res.ok) throw new Error('Failed to fetch cart');
-
-      const data = await res.json();
+      const data = res.data;
 
       const transformed = data.map(item => {
         const isService = !item.menuid;
@@ -42,8 +40,49 @@ const UserCart = () => {
 
       setCart(transformed);
     } catch (error) {
-      console.error(error);
-      setCart([]);
+      // Check if error is 401, then try refresh token
+      if (error.response?.status === 401) {
+        try {
+          // Call refresh token API
+          const refreshRes = await axios.post('/api/auth/user/refreshtoken', {}, {
+            withCredentials: true,
+          });
+
+          if (refreshRes.status === 200) {
+            // Retry original cart fetch after refresh
+            const retryRes = await axios.get('/api/user/cart', {
+              withCredentials: true,
+              headers: { 'Content-Type': 'application/json' },
+            });
+
+            const data = retryRes.data;
+
+            const transformed = data.map(item => {
+              const isService = !item.menuid;
+              return {
+                cartid: item.cartid,
+                id: item.menuid ?? item.serviceid ?? Math.random(),
+                name: item.menu_name || item.service_name || 'Unknown Item',
+                cateringname: item.cateringname || 'Unknown Caterer',
+                quantity: item.quantity,
+                price: parseFloat(item.menu_price ?? item.service_price ?? 0),
+                image: isService ? null : (item.image_data || '/default-image.png'),
+                isService,
+              };
+            });
+
+            setCart(transformed);
+          } else {
+            throw new Error('Refresh token failed');
+          }
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          setCart([]);
+        }
+      } else {
+        console.error(error);
+        setCart([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -63,13 +102,12 @@ const UserCart = () => {
     );
 
     const itemToUpdate = cart.find(item => item.id === id);
-
     if (!itemToUpdate || itemToUpdate.isService) return;
 
     const newQuantity = Math.max(1, itemToUpdate.quantity + delta);
 
     try {
-      await axios.put('/api/user/cart', {
+      let response = await axios.put('/api/user/cart', {
         cartid: itemToUpdate.cartid,
         menuid: itemToUpdate.id,
         quantity: newQuantity,
@@ -77,57 +115,78 @@ const UserCart = () => {
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true,
       });
+
+      if (response.status !== 200) {
+        throw new Error("Failed update");
+      }
     } catch (error) {
-      console.error('Failed to update quantity:', error.message);
-      toast.error("Failed to update quantity.", { autoClose: 1000, progress: false });
+      if (error.response?.status === 401) {
+        try {
+          await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+          // Retry the request
+          await axios.put('/api/user/cart', {
+            cartid: itemToUpdate.cartid,
+            menuid: itemToUpdate.id,
+            quantity: newQuantity,
+          }, {
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true,
+          });
+        } catch (refreshError) {
+          toast.error("Session expired. Please log in again.", { autoClose: 1000 });
+        }
+      } else {
+        console.error('Failed to update quantity:', error.message);
+        toast.error("Failed to update quantity.", { autoClose: 1000 });
+      }
     }
   };
 
-
   const removeItem = async (item) => {
-    try {
-      const body = {
-        cartid: item.cartid,    
-        menuid: item.isService ? null : item.id,
-        serviceid: item.isService ? item.id : null,
-      };
+    const body = {
+      cartid: item.cartid,
+      menuid: item.isService ? null : item.id,
+      serviceid: item.isService ? item.id : null,
+    };
 
-      const response = await axios.delete('/api/user/cart', {
+    try {
+      let response = await axios.delete('/api/user/cart', {
         data: body,
         withCredentials: true,
       });
 
       if (response.status === 200) {
-        toast.success("Item removed from cart!", { 
-          autoClose:1000,
-          hideProgressBar: true,    
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false,
-          progress: undefined, 
-        });
-        fetchCart()
+        toast.success("Item removed from cart!", { autoClose: 1000 });
+        fetchCart();
       } else {
-        toast.error("Failed to remove item from cart.", { 
-          autoClose:1000,
-          hideProgressBar: true,    
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false,
-          progress: undefined, });
+        toast.error("Failed to remove item from cart.", { autoClose: 1000 });
       }
     } catch (err) {
-      console.error("Error removing item from cart:", err.message);
-      toast.error(err.response?.data?.error || "Error removing item from cart.", {
-        autoClose:1000,
-        hideProgressBar: true,    
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        progress: undefined,
-      });
+      if (err.response?.status === 401) {
+        try {
+          await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+          // Retry request
+          const retryResponse = await axios.delete('/api/user/cart', {
+            data: body,
+            withCredentials: true,
+          });
+
+          if (retryResponse.status === 200) {
+            toast.success("Item removed from cart!", { autoClose: 1000 });
+            fetchCart();
+          } else {
+            toast.error("Failed to remove item from cart.", { autoClose: 1000 });
+          }
+        } catch (refreshError) {
+          toast.error("Session expired. Please log in again.", { autoClose: 1000 });
+        }
+      } else {
+        console.error("Error removing item from cart:", err.message);
+        toast.error(err.response?.data?.error || "Error removing item from cart.", { autoClose: 1000 });
+      }
     }
   };
+
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const totalTax = subtotal * TAX_RATE;
@@ -214,7 +273,10 @@ const UserCart = () => {
                             from <span className="font-medium text-gray-700">{item.cateringname}</span>
                           </p>
                           <button
-                            onClick={() => removeItem(item)}
+                            onClick={() => {
+                              removeItem(item)
+                              removeFromCart(item.id)
+                            }}
                             className="text-red-500 cursor-pointer hover:text-red-700 mt-1 text-sm flex items-center gap-1"
                           >
                             <FaTrash size={12} /> Remove

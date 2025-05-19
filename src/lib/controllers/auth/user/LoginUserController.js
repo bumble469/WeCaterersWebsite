@@ -26,17 +26,39 @@ export const loginUser = async (body) => {
       return { status: 401, data: { error: 'Invalid email or password!' } };
     }
 
-    const usertoken = jwt.sign(
+    const accessToken = jwt.sign(
       { userid: user.userid.toString(), email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '2m' }
     );
+
+    const refreshToken = jwt.sign(
+      { userid: user.userid.toString(), email: user.email },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '2d' }
+    );
+
+    await prisma.refresh_tokens.deleteMany({
+      where: {
+        userid: user.userid,
+      },
+    });
+
+    await prisma.refresh_tokens.create({
+      data: {
+        token: refreshToken,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        userid: user.userid,
+        catererid: null
+      }
+    });
 
     return {
       status: 200,
       data: {
         message: 'Login successful!',
-        usertoken,
+        accessToken,
+        refreshToken,
         user: {
           userid: user.userid.toString(),
           fullname: user.fullname,
@@ -49,4 +71,3 @@ export const loginUser = async (body) => {
     return { status: 500, data: { error: 'Internal server error!' } };
   }
 };
-

@@ -34,7 +34,7 @@ const CatererDashboard = () => {
     { name: 'Services', route: '#', tab: 'services', icon: <FaConciergeBell /> },
     { name: 'Menu', route: '#', tab: 'menu', icon: <FaUtensils /> },
     { name: 'Profile', route: '#', tab: 'profile', icon: <FaUser /> },
-    { name: 'Logout', route: '/', icon: <FaSignOutAlt /> },
+    { name: 'Logout', route: '#', icon: <FaSignOutAlt />, type:"caterer" },
   ];
 
   return (

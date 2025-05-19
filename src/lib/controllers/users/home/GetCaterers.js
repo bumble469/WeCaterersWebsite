@@ -73,7 +73,7 @@ export const getCaterers = async (token) => {
 
       return {
         ...caterer,
-        cateringid: caterer.cateringid.toString(),
+        cateringid: parseInt(caterer.cateringid),
         cateringimage: cateringimageBase64,
         cateringbannerimage: cateringbannerimageBase64,
       };
@@ -81,7 +81,7 @@ export const getCaterers = async (token) => {
 
     return {
       status: 200,
-      formattedCaterers,
+      data: formattedCaterers,
     };
 
   } catch (err) {

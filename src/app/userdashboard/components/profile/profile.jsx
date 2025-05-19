@@ -27,9 +27,33 @@ const UserProfile = () => {
         },
       });
     } catch (err) {
-      console.error("Failed to fetch profile:", err);
+      if (err.response?.status === 401) {
+        try {
+          await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+          const retryRes = await axios.post("/api/user/profile", {}, { withCredentials: true });
+          const retryData = retryRes.data;
+          setUserData({
+            fullname: retryData.fullname || "",
+            email: retryData.email || "",
+            contact: retryData.contact || "",
+            address: retryData.address || "",
+            bio: retryData.bio || "",
+            profilePicture: retryData.profilephoto || "", 
+            socialLinks: {
+              instagram: retryData.sociallink1 || "",
+              twitter: retryData.sociallink2 || "",
+              facebook: retryData.sociallink3 || "",
+            },
+          });
+        } catch (refreshErr) {
+          console.error("Token refresh failed:", refreshErr);
+        }
+      } else {
+        console.error("Failed to fetch profile:", err);
+      }
     }
   };
+
 
   useEffect(() => {
     fetchProfile();
@@ -100,9 +124,46 @@ const UserProfile = () => {
         console.error("Failed to update profile");
       }
     } catch (err) {
-      console.error("Error updating profile:", err);
+      if (err.response?.status === 401) {
+        try {
+          await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+
+          const retryRes = await axios.put("/api/user/profile", {
+            name: userData.fullname || "",
+            email: userData.email || "",
+            phone: userData.contact || "",
+            address: userData.address || "",
+            bio: userData.bio || "",
+            profilePicture: userData.profilePicture || "",
+            socialLinks: {
+              instagram: userData.socialLinks?.instagram || "",
+              twitter: userData.socialLinks?.twitter || "",
+              facebook: userData.socialLinks?.facebook || "",
+            },
+          }, {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          });
+
+          if (retryRes.status === 200) {
+            setUserData((prev) => ({
+              ...prev,
+              ...payload,
+            }));
+            setIsEditing(false);
+          } else {
+            console.error("Failed to update profile on retry");
+          }
+        } catch (refreshErr) {
+          console.error("Token refresh failed:", refreshErr);
+          // Optional: logout or redirect user here
+        }
+      } else {
+        console.error("Error updating profile:", err);
+      }
     }
   };
+
 
   return (
     <motion.div
