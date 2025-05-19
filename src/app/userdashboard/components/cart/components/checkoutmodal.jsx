@@ -23,7 +23,7 @@ const UserCheckout = ({ cart, setShowModal, total }) => {
               <div key={item.id} className="flex justify-between items-center border-b py-3">
                 <div>
                   <p className="text-lg font-medium text-gray-800">{item.name} x{item.quantity}</p>
-                  <p className="text-sm text-gray-600">from {item.caterer}</p>
+                  <p className="text-sm text-gray-600">from {item.cateringname}</p>
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-gray-800">₹{(item.price * item.quantity).toFixed(2)}</p>
@@ -42,13 +42,13 @@ const UserCheckout = ({ cart, setShowModal, total }) => {
           <div className="flex justify-between mt-8 space-x-4">
             <button
               onClick={() => setShowModal(false)} // Close the modal
-              className="w-full bg-gray-300 text-gray-800 hover:bg-gray-400 py-3 rounded-lg transition duration-300"
+              className="w-full bg-gray-300 cursor-pointer text-gray-800 hover:bg-gray-400 py-3 rounded-lg transition duration-300"
             >
               Cancel
             </button>
             <button
               onClick={() => alert('Order Placed!')} // Add functionality here to place the order
-              className="w-full bg-green-600 text-white hover:bg-green-700 py-3 rounded-lg transition duration-300"
+              className="w-full cursor-pointer bg-green-600 text-white hover:bg-green-700 py-3 rounded-lg transition duration-300"
             >
               Place Order
             </button>

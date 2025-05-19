@@ -66,6 +66,59 @@ const CateringMenu = ({cateringid}) => {
     }
   };
 
+  const AddToCart = async (item) => {
+    const cartItem = {
+      cateringid,
+      menuid: item.menuid || null,
+      serviceid: null,  
+      quantity: item.quantity || 1,
+    };
+
+    try {
+      const response = await axios.post('/api/user/cart', cartItem, { withCredentials: true });
+      if (response.status === 200) {
+        toast.success("Item added to cart!",{
+          autoClose:1000,
+          hideProgressBar: true,    
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          progress: undefined, 
+        });
+      } else {
+        toast.error("Could not add item to cart!",{
+          autoClose:1000,
+          hideProgressBar: true,    
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          progress: undefined, 
+        });
+      }
+    } catch (err) {
+      console.error("Error while adding to cart! ", err.message || response.message);
+      if(err.status == 409){
+        toast.error("Item already in cart!.", err,{
+          autoClose:1000,
+          hideProgressBar: true,    
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          progress: undefined, 
+        });
+      }else{
+        toast.error("Error adding item to cart.", err,{
+          autoClose:1000,
+          hideProgressBar: true,    
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          progress: undefined, 
+      });
+      }
+    }
+  };
+
   const openModal = (item) => {
     setSelectedItem(item);
     setIsModalOpen(true);
@@ -260,7 +313,8 @@ const CateringMenu = ({cateringid}) => {
                             View Details
                           </button>
                           <button
-                            className="bg-green-600 text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1"
+                            onClick={() => AddToCart(item)}
+                            className="bg-green-600 cursor-pointer text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1"
                           >
                             Add to Cart
                           </button>

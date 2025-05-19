@@ -1,6 +1,8 @@
 "use client"
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const CateringServiceModal = ({ isOpen, onClose, serviceDetails }) => {
     useEffect(() => {
@@ -16,6 +18,59 @@ const CateringServiceModal = ({ isOpen, onClose, serviceDetails }) => {
     }, [isOpen]);
     
     if (!isOpen) return null;
+
+    const AddToCart = async () => {
+        const cartItem = {
+            cateringid: serviceDetails?.cateringId, 
+            menuid: null,
+            serviceid: serviceDetails?.serviceId, 
+            quantity: 1,
+        };
+        try {
+            const response = await axios.post('/api/user/cart', cartItem, { withCredentials: true });
+            if (response.status === 200) {
+                toast.success("Service added to cart!", {
+                    autoClose:1000,
+                    hideProgressBar: true,    
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: false,
+                    progress: undefined,
+                });
+            } else {
+                toast.error("Could not add service to cart!",{
+                    autoClose:1000,
+                    hideProgressBar: true,    
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: false,
+                    progress: undefined,
+                });
+            }
+        } catch (err) {
+            console.error("Error while adding service to cart:", err.message);
+            if(err.status == 409){
+                toast.error("Service already in cart!", {
+                    autoClose:1000,
+                    hideProgressBar: true,    
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: false,
+                    progress: undefined,
+                });
+            }else{
+                toast.error("Error adding service to cart!", {
+                    autoClose:1000,
+                    hideProgressBar: true,    
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: false,
+                    progress: undefined,
+                });
+            }
+        }
+    };
+
 
     return (
         <AnimatePresence>
@@ -70,11 +125,8 @@ const CateringServiceModal = ({ isOpen, onClose, serviceDetails }) => {
                     {/* Add Service Button */}
                     <div className="mt-6 flex justify-end">
                         <button
-                            onClick={() => {
-                                // Handle add service logic here
-                                console.log("Add service clicked:", serviceDetails);
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md transition duration-200"
+                            onClick={AddToCart}
+                            className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md transition duration-200"
                         >
                             Add Service
                         </button>

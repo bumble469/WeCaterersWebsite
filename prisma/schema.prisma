@@ -70,5 +70,22 @@ model menu {
   @@map("menu")
 }
 
+model cart {
+  cartid     BigInt   @id @default(autoincrement())
+  userid     BigInt
+  cateringid BigInt
+  menuid     BigInt?   
+  serviceid  BigInt?      
+  quantity   Int
+
+  // No relation fields, only IDs
+
+  @@index([userid])
+  @@index([cateringid])
+  @@index([menuid])
+  @@index([serviceid])
+}
+
+
 
 

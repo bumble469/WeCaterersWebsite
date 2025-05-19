@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import OtpModal from './otpmodal';
 import { toast } from 'react-toastify';
@@ -52,6 +53,7 @@ const AuthComponent = () => {
   const router = useRouter();
   const [userType, setUserType] = useState('user');
   const [loading, setLoading] = useState(false);
+  const [viewPassword, setViewPassword] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
     cateringName: '',
@@ -64,6 +66,10 @@ const AuthComponent = () => {
 
   const [errors, setErrors] = useState(initialErrors);
   const [isValid, setIsValid] = useState(false);
+
+  const toggleViewPassword = () => {
+    setViewPassword(!viewPassword);
+  }
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -284,11 +290,18 @@ const AuthComponent = () => {
               <div>
                 <label className="block mb-1 font-medium text-gray-700">Password</label>
                 <input
-                  type="password"
+                  type={`${viewPassword ? 'text' : 'password'}`}
                   className="w-full px-3 py-1 border rounded-lg text-gray-700"
                   value={formData.password}
                   onChange={e => handleChange('password', e.target.value)}
                 />
+                <span
+                  className="text-gray-500 cursor-pointer float-right relative bottom-[24px] right-3"
+                  onClick={toggleViewPassword}
+                >
+                  {viewPassword ? <Eye size={17} /> : <EyeOff size={17} />}
+                </span>
+
                 {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
               </div>
 
