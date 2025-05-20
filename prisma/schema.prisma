@@ -119,6 +119,18 @@ model refresh_tokens {
   catererid BigInt?   
 }
 
+model caterer_ratings {
+  ratingid   BigInt   @id @default(autoincrement())
+  userid     BigInt
+  cateringid BigInt
+  rating     Int
+  created_at DateTime @default(now())
+
+  @@unique([userid, cateringid])
+}
+
+
+
 
 
 

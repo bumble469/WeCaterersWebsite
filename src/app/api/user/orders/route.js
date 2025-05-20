@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createOrderFromCart } from "@/lib/controllers/users/orders/CreateOrder";
 import { getUserOrders } from "@/lib/controllers/users/orders/GetOrders";
-import { requestCancelOrders } from "@/lib/controllers/users/orders/RequestCancelOrder";
+import { updateOrderStatus } from "@/lib/controllers/users/orders/UpdateOrder";
 import { deleteUserOrders } from "@/lib/controllers/users/orders/DeleteOrder";
 
 export async function POST(req) {
@@ -45,13 +45,13 @@ export async function PUT(req) {
     }
 
     const body = await req.json();
-    const { orderid } = body;
+    const { orderid, newStatus } = body;
 
     if (!orderid) {
       return NextResponse.json({ error: "Missing order ID" }, { status: 400 });
     }
 
-    const result = await requestCancelOrders(token, orderid);
+    const result = await updateOrderStatus(token, orderid, newStatus);
 
     return NextResponse.json(result.data, { status: result.status });
 

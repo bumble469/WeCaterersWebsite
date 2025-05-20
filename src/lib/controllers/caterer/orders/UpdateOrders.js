@@ -11,7 +11,7 @@ export const updateCatererOrders = async (token, orderid, status) => {
     return { status: 400, data: { error: 'Order ID and status are required!' } };
   }
 
-  const allowedStatuses = ['Confirmed', 'Cancelled_C', 'Cancelled', "Cancel Accepted", "Cancel Rejected"];
+  const allowedStatuses = ['Confirmed', 'Cancelled_C', 'Cancelled', "Cancel Accepted", "Cancellation Rejected", "Out for delivery"];
   if (!allowedStatuses.includes(status)) {
     return { status: 400, data: { error: 'Invalid status value!' } };
   }

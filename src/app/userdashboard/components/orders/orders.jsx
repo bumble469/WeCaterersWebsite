@@ -161,7 +161,7 @@ const UserOrders = () => {
     }
   };
 
-  const handleRequestCancel = async (orderId) => {
+  const handleUpdateOrder = async (orderId, newstatus) => {
     const toastOptions = {
       autoClose: 1000,
       hideProgressBar: true,
@@ -172,20 +172,19 @@ const UserOrders = () => {
 
     try {
       const res = await axios.put('/api/user/orders', 
-        { orderid: orderId }, 
+        { orderid: orderId, newStatus: newstatus },
         { withCredentials: true }
       );
 
       if (res.status === 200) {
-        toast.info("Requested for cancellation!", toastOptions);
-        // Optionally, update order status locally:
+        toast.info(`Status updated to ${newstatus}`, toastOptions);
         setOrders(prev =>
           prev.map(order => 
-            order.id === orderId ? { ...order, status: "Cancellation Requested" } : order
+            order.id === orderId ? { ...order, status: newstatus } : order
           )
         );
       } else {
-        toast.error("Failed to request cancellation.", toastOptions);
+        toast.error("Failed to update status", toastOptions);
       }
     } catch (err) {
       if (err?.response?.status === 401) {
@@ -198,10 +197,10 @@ const UserOrders = () => {
           );
 
           if (retryRes.status === 200) {
-            toast.info("Requested for cancellation!", toastOptions);
+            toast.info(`Status updated to ${newstatus}`, toastOptions);
             setOrders(prev =>
               prev.map(order => 
-                order.id === orderId ? { ...order, status: "Cancellation Requested" } : order
+                order.id === orderId ? { ...order, status: newstatus } : order
               )
             );
             return;
@@ -210,8 +209,8 @@ const UserOrders = () => {
           console.error("Token refresh or retry request cancel failed:", refreshErr);
         }
       }
-      toast.error("Error requesting cancellation.", toastOptions);
-      console.error("Request cancel failed:", err);
+      toast.error("Error updating request", toastOptions);
+      console.error("Error updating request: ", err);
     }
   };
 
@@ -222,13 +221,17 @@ const UserOrders = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'Confirmed':
-        return 'bg-green-200 text-gray-600  '
+        return 'bg-green-200 text-gray-600'
+      case 'Cancellation Rejected':
+        return 'bg-green-200 text-gray-600'
       case 'Pending':
         return 'bg-blue-100 text-blue-700';
       case 'Cancelled':
         return 'bg-red-100 text-red-700';
       case 'Delivered':
         return 'bg-green-100 text-green-700';
+      case 'Out for delivery':
+        return 'bg-blue-200 text-blue-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
@@ -280,8 +283,17 @@ const UserOrders = () => {
                     <p className="text-lg text-gray-500 font-semibold">Order ID: {order.id}</p>
                     <p className="text-sm text-gray-500">{order.date}</p>
                   </div>
-                  <div className={`text-sm px-3 py-1 rounded-full ${getStatusColor(order.status)} font-medium`}>
-                    {order.status}
+                  <div className={`text-sm px-3 py-1 rounded-full ${getStatusColor(order.status)} font-medium flex items-center gap-2`}>
+                    {order.status == 'Cancellation Rejected' ? (
+                      <>
+                        <p className='font-bold'>Confirmed</p>
+                        <span className="bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+                          Cancellation Rejected
+                        </span>
+                      </>
+                    ) : (
+                      <p className='font-bold'>{order.status}</p>
+                    )}
                   </div>
                 </div>
                 <ul className="space-y-1 text-gray-700 mb-3">
@@ -301,12 +313,12 @@ const UserOrders = () => {
                   {!order.isPast && (
                     order.status === "Confirmed" ? (
                       <button
-                        onClick={() => handleRequestCancel(order.id)}
+                        onClick={() => handleUpdateOrder(order.id,"Requested Cancel")}
                         className="text-red-600 cursor-pointer hover:underline text-sm"
                       >
                         Request Cancel
                       </button>
-                    ) : (
+                    ) : order.status === "Pending" ? (
                       <button
                         onClick={() => {
                           setOrderToDelete(order.id);
@@ -316,8 +328,17 @@ const UserOrders = () => {
                       >
                         Cancel Order
                       </button>
-                    )
-                  )}  
+                    ) : order.status === "Out for delivery" ? (
+                        <button
+                          onClick={() => {
+                            handleUpdateOrder(order.id, "Delivered");
+                          }}
+                          className="text-blue-600 cursor-pointer hover:underline text-sm"
+                          >
+                          Got it!
+                      </button>
+                    ) : null
+                  )}
                 </div>
               </motion.div>
             ))

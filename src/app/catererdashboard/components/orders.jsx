@@ -142,7 +142,7 @@ const CatererDashboardOrders = () => {
 
     return matchesOrderId && matchesClientName && matchesDate && matchesStatus;
   });
-
+  const sortedFilteredOrders = filteredOrders.sort((a, b) => new Date(b.order_date) - new Date(a.order_date));
 
   return (
     <motion.div
@@ -225,9 +225,10 @@ const CatererDashboardOrders = () => {
                   <option value="">All</option>
                   <option value="Pending">Pending</option>
                   <option value="Confirmed">Confirmed</option>
-                  <option value="Rejected">Rejected</option>
+                  <option value="Out for delivery">Out for delivery</option>
                   <option value="Cancelled">Cancelled</option>
                   <option value="Requested Cancel">Requested Cancel</option>
+                  <option value="Delivered">Delivered</option>
                 </select>
               </div>
 
@@ -238,7 +239,7 @@ const CatererDashboardOrders = () => {
                   setFilterDate('');
                   setFilterStatus('');
                 }}
-                className="text-xs text-red-600 underline self-end sm:self-auto pb-1"
+                className="text-xs text-red-600 cursor-pointer mt-4 underline self-end sm:self-auto pb-1"
               >
                 Clear
               </button>
@@ -247,7 +248,7 @@ const CatererDashboardOrders = () => {
           </div>
 
           <div className="overflow-x-auto custom-scrollbar">
-            {filteredOrders.length === 0 ? (
+            {sortedFilteredOrders.length === 0 ? (
               <p className="text-center text-gray-500">No orders found.</p>
             ) : (
               <motion.div
@@ -257,7 +258,7 @@ const CatererDashboardOrders = () => {
                   visible: { transition: { staggerChildren: 0.1 } },
                 }}
               >
-                {filteredOrders.map((order, index) => (
+                {sortedFilteredOrders.map((order, index) => (
                   <motion.div
                     key={order.orderid}
                     className="mb-8 border rounded-lg p-4 shadow-sm hover:shadow-md transition"
@@ -272,19 +273,27 @@ const CatererDashboardOrders = () => {
                         className={`px-2 py-1 rounded-full text-xs font-semibold ${
                           order.status === 'Pending'
                             ? 'bg-yellow-100 text-yellow-700'
-                            : order.status === 'Confirmed'
+                            : ['Confirmed', 'Cancellation Rejected'].includes(order.status)
                             ? 'bg-green-100 text-green-700'
                             : ['Rejected', 'Cancelled', 'Cancelled_C'].includes(order.status)
                             ? 'bg-red-100 text-red-700'
                             : order.status === 'Requested Cancel'
                             ? 'bg-blue-100 text-blue-700'
+                            : order.status === "Out for delivery"
+                            ? 'bg-blue-200 text-blue-800'
                             : 'bg-gray-100 text-gray-700'
                         }`}
                         style={{ lineHeight: '1' }}
                       >
-                        {order.status}
+                        {order.status === 'Cancellation Rejected' ? 'Confirmed(cancellation confirmed)' : order.status}
                       </span>
+                      {(order.status === "Confirmed" || order.status === "Cancellation Rejected") ? (
+                        <button onClick={handleOrderUpdate(order.orderid, 'Out for delivery')} className='px-2 ml-auto hover:bg-blue-300 transition duration-100 cursor-pointer text-xs py-1 rounded-sm text-xs font-semibold bg-blue-200 text-blue-800'>
+                          Mark as Out for Delivery
+                        </button>
+                      ) : null}
                     </div>
+
 
                     {/* Order Details */}
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-4">
@@ -381,16 +390,16 @@ const CatererDashboardOrders = () => {
                       {order.status === 'Requested Cancel' && (
                         <>
                           <button
-                            onClick={handleOrderUpdate(order.orderid, 'Cancelled_C')}
-                            className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition"
+                            onClick={handleOrderUpdate(order.orderid, 'Cancelled')}
+                              className='px-4 py-2 text-gray-600 bg-gray-200 cursor-pointer transition duration-100 hover:bg-gray-300 rounded-full text-xs font-semibold'
                           >
-                            Cancel
+                            Accept Cancellation
                           </button>
                           <button
-                            onClick={handleOrderUpdate(order.orderid, 'Confirmed')}
-                            className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 transition"
+                            onClick={handleOrderUpdate(order.orderid, 'Cancellation Rejected')}
+                            className='px-4 py-2 text-gray-600 bg-green-200 cursor-pointer transition duration-100 hover:bg-gray-300 rounded-full text-xs font-semibold'
                           >
-                            Keep
+                            Reject Cancellation
                           </button>
                         </>
                       )}

@@ -6,6 +6,11 @@ import { toast } from 'react-toastify';
 const UserCheckout = ({ cart, setShowModal, total, handleCartFetch }) => {
   const [address, setAddress] = useState('');
 
+  // States for notes parts (without section)
+  const [time, setTime] = useState('');
+  const [date, setDate] = useState('');
+  const [additionalPointers, setAdditionalPointers] = useState('');
+
   useEffect(() => {
     async function fetchAddress() {
       try {
@@ -14,6 +19,22 @@ const UserCheckout = ({ cart, setShowModal, total, handleCartFetch }) => {
           setAddress(res.data.address);
         }
       } catch (error) {
+        if (error.response?.status === 401) {
+          try {
+            const refreshRes = await axios.post('/api/auth/caterer/refreshtoken', {}, {
+              withCredentials: true,
+            });
+
+            if (refreshRes.status === 200) {
+              const res = await axios.post('/api/user/profile');
+              if (res.data?.address) {
+                setAddress(res.data.address);
+              }
+            }
+          } catch (refreshErr) {
+            console.error("Token refresh failed:", refreshErr.message);
+          }
+        }
         console.error('Failed to fetch address:', error);
         toast.error('Failed to fetch address');
       }
@@ -29,15 +50,23 @@ const UserCheckout = ({ cart, setShowModal, total, handleCartFetch }) => {
         toast.warn('No catering selected!');
         return;
       }
-      
+
+      // Combine inputs into notes string, without section
+      const notes = `
+        Deliver to: ${address}
+        Time: ${time}
+        Date: ${date}
+        Additional Pointers: ${additionalPointers}
+      `;
+
       const res = await axios.post('/api/user/orders', {
         cateringid,
         status: 'Pending',
-        notes: `Deliver to: ${address}`,
-        total_price: total
+        notes: notes.trim(),
+        total_price: total,
       });
 
-      if (res.status == 200) {
+      if (res.status === 200) {
         toast.success('Order placed successfully!');
         handleCartFetch();
         setShowModal(false);
@@ -83,6 +112,43 @@ const UserCheckout = ({ cart, setShowModal, total, handleCartFetch }) => {
           <div className="mt-6">
             <h3 className="font-semibold mb-1 text-gray-600">Delivery Address</h3>
             <p className="text-gray-700">{address || 'Loading address...'}</p>
+          </div>
+
+          {/* New Inputs Section (without Section) */}
+          <div className="mt-6 space-y-4">
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1" htmlFor="time">Enter Time</label>
+              <input
+                id="time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full border border-gray-300 text-gray-500 rounded px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1" htmlFor="date">Date</label>
+              <input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full border border-gray-300 text-gray-500 rounded px-3 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1" htmlFor="additional">Additional Pointers</label>
+              <input
+                id="additional"
+                type="text"
+                placeholder="Any additional pointers"
+                value={additionalPointers}
+                onChange={(e) => setAdditionalPointers(e.target.value)}
+                className="w-full border border-gray-300 text-gray-500 rounded px-3 py-2"
+              />
+            </div>
           </div>
 
           {/* Total Amount */}
