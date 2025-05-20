@@ -41,7 +41,6 @@ const MenuItemDetailsModal = ({ item, isOpen, onClose }) => {
   };
 
   const handleApplyRating = () => {
-    // You can add API call here to save the rating
     setRatingApplied(true);
   };
 

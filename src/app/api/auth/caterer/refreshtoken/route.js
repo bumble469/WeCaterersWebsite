@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { refreshAccessToken } from '@/lib/controllers/auth/user/RefreshTokenController';
+import { refreshAccessToken } from '@/lib/controllers/auth/caterer/RefreshTokenController';
 
 export async function POST(req) {
   try {
@@ -13,7 +13,7 @@ export async function POST(req) {
 
     const response = NextResponse.json(data, { status });
 
-    response.cookies.set('usertoken', data.accessToken, {
+    response.cookies.set('token', data.accessToken, {
       httpOnly: true,
       secure: true,
       maxAge: 10 * 60,

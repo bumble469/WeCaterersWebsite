@@ -10,6 +10,7 @@ export async function POST(req) {
     if (result.status === 200) {
       const response = NextResponse.json(result.data, { status: 200 });
       response.cookies.set('token', '', { maxAge: 0, path: '/' });
+      response.cookies.set('refreshtoken', '', { maxAge: 0, path: '/' });
       return response;
     }
 

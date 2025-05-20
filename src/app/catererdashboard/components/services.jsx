@@ -24,15 +24,32 @@ const CatererDashboardServices = () => {
     fetchServices();
   }, []);
 
+  const refreshToken = async () => {
+    try {
+      const refreshRes = await axios.post('/api/auth/caterer/refreshtoken', {}, {
+        withCredentials: true,
+      });
+      return refreshRes.status === 200;
+    } catch (err) {
+      console.error("Token refresh failed:", err.message);
+      return false;
+    }
+  };
+
   const fetchServices = async () => {
     try {
       const response = await axios.get('/api/caterer/service', {
         withCredentials: true,
       });
+
       if (response.status === 200 || response.status === 201) {
         setServices(response.data);
       }
     } catch (err) {
+      if (err.response?.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) return fetchServices(); // Retry after refreshing
+      }
       toast.error('Failed to fetch services');
       console.error(err);
     }
@@ -58,7 +75,7 @@ const CatererDashboardServices = () => {
           description: '',
           price: '',
           capacity: '',
-          availability: true, 
+          availability: true,
         });
         setShowForm(false);
         fetchServices();
@@ -66,11 +83,14 @@ const CatererDashboardServices = () => {
         toast.error('Could not add service');
       }
     } catch (error) {
+      if (error.response?.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) return handleAddService(service); // Retry
+      }
       console.error('Add service error:', error.response?.data || error.message);
       toast.error(error.response?.data?.error || error.message);
     }
   };
-
 
   const handleEditService = async (serviceid, serviceData) => {
     try {
@@ -90,8 +110,8 @@ const CatererDashboardServices = () => {
         }),
       });
 
-      if (response.status == 200 || response.status == 201) {
-        toast.success("Service updated!",{
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Service updated!", {
           autoClose: 1000,
           hideProgressBar: true,
           closeOnClick: true,
@@ -99,20 +119,22 @@ const CatererDashboardServices = () => {
           draggable: false,
         });
         fetchServices();
+      } else if (response.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) return handleEditService(serviceid, serviceData); // Retry
       } else {
-        toast.error("Could not update service!",{
+        toast.error("Could not update service!", {
           autoClose: 1000,
           hideProgressBar: true,
           closeOnClick: true,
           pauseOnHover: false,
           draggable: false,
-        })
+        });
       }
     } catch (err) {
       console.error('Error editing service:', err);
     }
   };
-
 
   const handleDeleteService = async (serviceid) => {
     try {
@@ -126,17 +148,22 @@ const CatererDashboardServices = () => {
           autoClose: 1000,
           hideProgressBar: true,
         });
-        fetchServices(); // Refresh the list after deletion
+        fetchServices(); // Refresh list
       } else {
         toast.error('Failed to delete service');
       }
     } catch (error) {
+      if (error.response?.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) return handleDeleteService(serviceid); // Retry
+      }
       console.error('Delete error:', error.response?.data || error.message);
       toast.error(error.response?.data?.error || 'Error deleting service');
     } finally {
       setShowDeleteConfirm(null);
     }
   };
+
 
   return (
     <motion.div
@@ -263,13 +290,13 @@ const CatererDashboardServices = () => {
                 </h3>
                 <p className="text-sm text-gray-600 mt-2">{service.description}</p>
                 <div className="mt-4">
-                  <p className="text-lg font-semibold text-gray-700">{service.price}</p>
-                  <p className="text-sm text-gray-500">{service.capacity}</p>
+                  <p className="text-lg font-semibold text-gray-700">&#8377;{service.price}</p>
+                  <p className="text-sm text-gray-500">{service.capacity} people</p>
                 </div>
                 <div className="flex-grow"></div>
                 <div className="flex justify-between mt-4 space-x-4">
                   <button
-                    className="py-1 px-3 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105"
+                    className="py-1 px-3 cursor-pointer text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105"
                     onClick={() =>
                       setEditingService({
                         ...service,
@@ -281,7 +308,7 @@ const CatererDashboardServices = () => {
                   </button>
 
                   <button
-                    className="py-1 px-3 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105"
+                    className="py-1 px-3 cursor-pointer text-white bg-red-500 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105"
                     onClick={() => setShowDeleteConfirm(service)}
                   >
                     Delete

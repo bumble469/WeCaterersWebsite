@@ -6,7 +6,6 @@ export async function POST(req) {
     const body = await req.json();
     const { status, data } = await loginCaterer(body);
 
-    // Create the response
     const response = NextResponse.json(
       {
         message: data.message,
@@ -15,12 +14,20 @@ export async function POST(req) {
       { status }
     );
 
-    response.cookies.set("token", data.token, {
+    response.cookies.set("token", data.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", 
-      maxAge: 60 * 60, 
+      secure: true,
+      maxAge: 2 * 60, 
       sameSite: "lax",
-      path: "/", 
+      path: "/",
+    });
+
+    response.cookies.set("refreshtoken", data.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60, 
+      sameSite: "lax",
+      path: "/",
     });
 
     return response;

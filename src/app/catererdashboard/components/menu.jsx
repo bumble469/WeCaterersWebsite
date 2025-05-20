@@ -19,21 +19,43 @@ const CatererDashboardMenu = () => {
     fetchMenuItems();
   }, []);
 
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+  });
+
+  const refreshTokenIfNeeded = async () => {
+    try {
+      await axios.post('/api/auth/caterer/refreshtoken', { withCredentials: true });
+    } catch (error) {
+      console.error('Token refresh failed:', error.response?.data || error.message);
+      toast.error('Session expired. Please log in again.');
+      throw new Error('Token refresh failed');
+    }
+  };
+
   const fetchMenuItems = async () => {
     try {
+      await refreshTokenIfNeeded();
       const response = await axios.get('/api/caterer/menu', { withCredentials: true });
+
       if (response.status === 200 || response.status === 201) {
         setMenuItems(response.data);
       }
     } catch (err) {
-      toast.error('Failed to fetch services');
+      toast.error('Failed to fetch menu items');
       console.error(err);
     }
   };
 
   const handleAddItem = async (newItem) => {
     try {
+      await refreshTokenIfNeeded();
       const response = await axios.post('/api/caterer/menu', newItem, { withCredentials: true });
+
       if (response.status === 200 || response.status === 201) {
         toast.success('Menu item added successfully!', {
           autoClose: 1000,
@@ -51,18 +73,11 @@ const CatererDashboardMenu = () => {
     }
   };
 
-  const toBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
-
   const handleEditMenu = async (menuid, menuData) => {
     try {
-      let base64Image = menuData.image; // Use existing image if no new file
+      await refreshTokenIfNeeded();
 
+      let base64Image = menuData.image;
       if (menuData.imageFile) {
         base64Image = await toBase64(menuData.imageFile);
       }
@@ -76,7 +91,7 @@ const CatererDashboardMenu = () => {
         dietarypreference: menuData.dietarypreference,
         image: base64Image,
       }, {
-        withCredentials: true, // needed to send cookies
+        withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -108,6 +123,8 @@ const CatererDashboardMenu = () => {
 
   const handleDeleteMenu = async (menuid) => {
     try {
+      await refreshTokenIfNeeded();
+
       const response = await axios.delete('/api/caterer/menu', {
         data: { menuid },
         withCredentials: true,
@@ -118,17 +135,18 @@ const CatererDashboardMenu = () => {
           autoClose: 1000,
           hideProgressBar: true,
         });
-        fetchMenuItems(); 
+        fetchMenuItems();
       } else {
-        toast.error('Failed to delete service');
+        toast.error('Failed to delete menu item');
       }
     } catch (error) {
       console.error('Delete error:', error.response?.data || error.message);
-      toast.error(error.response?.data?.error || 'Error deleting service');
+      toast.error(error.response?.data?.error || 'Error deleting menu item');
     } finally {
       setShowDeleteConfirm(null);
     }
   };
+
 
   const handleImageUpload = (file, setFieldValue) => {
     setIsImageLoading(true);
@@ -305,13 +323,13 @@ const CatererDashboardMenu = () => {
                   <div className="flex justify-between items-center mt-auto">
                     <button
                       onClick={() => setEditingMenu(item)}
-                      className="py-1 px-3 text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
+                      className="py-1 px-3 cursor-pointer text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
                     >
                       Edit            
                     </button>
                     <button
                       onClick={() => setShowDeleteConfirm(item)} // pass the whole item here
-                      className="py-1 px-3 text-white bg-red-500 rounded-lg hover:bg-red-600"
+                      className="py-1 px-3 cursor-pointer text-white bg-red-500 rounded-lg hover:bg-red-600"
                     >
                       Delete
                     </button>

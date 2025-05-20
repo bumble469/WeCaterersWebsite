@@ -21,7 +21,11 @@ export const logoutCaterer = async (token) => {
     if (!caterer) {
       return { status: 404, data: { error: 'Caterer not found' } };
     }
-    
+    await prisma.refresh_tokens.deleteMany({
+      where: {
+        catererid: cateringid,
+      },
+    });
     return { status: 200, data: { message: 'Logout successful' } };
   } catch (err) {
     if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {

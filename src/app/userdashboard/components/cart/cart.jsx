@@ -18,7 +18,7 @@ const UserCart = ({removeFromCart}) => {
   async function fetchCart() {
     try {
       let res = await axios.get('/api/user/cart', {
-        withCredentials: true,  // send cookies
+        withCredentials: true,
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -28,6 +28,7 @@ const UserCart = ({removeFromCart}) => {
         const isService = !item.menuid;
         return {
           cartid: item.cartid,
+          cateringid: Number(item.cateringid),
           id: item.menuid ?? item.serviceid ?? Math.random(),
           name: item.menu_name || item.service_name || 'Unknown Item',
           cateringname: item.cateringname || 'Unknown Caterer',
@@ -40,16 +41,13 @@ const UserCart = ({removeFromCart}) => {
 
       setCart(transformed);
     } catch (error) {
-      // Check if error is 401, then try refresh token
       if (error.response?.status === 401) {
         try {
-          // Call refresh token API
           const refreshRes = await axios.post('/api/auth/user/refreshtoken', {}, {
             withCredentials: true,
           });
 
           if (refreshRes.status === 200) {
-            // Retry original cart fetch after refresh
             const retryRes = await axios.get('/api/user/cart', {
               withCredentials: true,
               headers: { 'Content-Type': 'application/json' },
@@ -61,6 +59,7 @@ const UserCart = ({removeFromCart}) => {
               const isService = !item.menuid;
               return {
                 cartid: item.cartid,
+                cateringid: Number(item.cateringid),
                 id: item.menuid ?? item.serviceid ?? Math.random(),
                 name: item.menu_name || item.service_name || 'Unknown Item',
                 cateringname: item.cateringname || 'Unknown Caterer',
@@ -86,6 +85,10 @@ const UserCart = ({removeFromCart}) => {
     } finally {
       setLoading(false);
     }
+  }
+
+  const handleCartFetch = () => {
+    fetchCart();
   }
 
   useEffect(() => {
@@ -337,7 +340,7 @@ const UserCart = ({removeFromCart}) => {
                 <div className="text-right">
                   <button
                     onClick={handleCheckout}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition duration-300 w-full md:w-auto"
+                    className="bg-green-600 cursor-pointer hover:bg-green-700 text-white px-6 py-3 rounded-lg transition duration-300 w-full md:w-auto"
                   >
                     Proceed to Checkout
                   </button>
@@ -348,7 +351,7 @@ const UserCart = ({removeFromCart}) => {
           )}
         </>
       )}
-      {showModal && <UserCheckout cart={cart} setShowModal={setShowModal} total={total} />}
+      {showModal && <UserCheckout cart={cart} setShowModal={setShowModal} total={total} handleCartFetch={handleCartFetch} />}
     </motion.div>
   );
 };

@@ -39,6 +39,18 @@ const CatererDashboardProfile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
 
+  const refreshToken = async () => {
+    try {
+      const res = await axios.post("/api/auth/caterer/refreshtoken", {}, {
+        withCredentials: true,
+      });
+      return res.status === 200;
+    } catch (err) {
+      console.error("Token refresh failed:", err.message);
+      return false;
+    }
+  };
+
   const fetchProfile = async () => {
     setLoading(true);
     try {
@@ -58,12 +70,17 @@ const CatererDashboardProfile = () => {
         phone: data.contact || "",
         email: data.email || "",
         address: data.address || "",
-        eventtype: data.eventtype || "", // <-- Added
+        eventtype: data.eventtype || "",
       };
 
       setProfile(newProfile);
-      originalProfile.current = newProfile; // save original data
+      originalProfile.current = newProfile;
     } catch (err) {
+      if (err.response?.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) return fetchProfile(); // Retry once after refreshing
+      }
+
       console.error(
         "Failed to fetch caterer profile:",
         err.response?.data?.error || err.message
@@ -72,6 +89,7 @@ const CatererDashboardProfile = () => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchProfile();
@@ -138,12 +156,19 @@ const CatererDashboardProfile = () => {
         fetchProfile();
       }
     } catch (error) {
+      if (error.response?.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) return handleSave(); // retry once
+      }
+
       console.error("Update failed:", error.response?.data || error.message);
       alert(
-        "Error updating profile: " + (error.response?.data?.error || error.message)
+        "Error updating profile: " +
+          (error.response?.data?.error || error.message)
       );
     }
   };
+
 
   const handleEditToggle = () => {
     if (isEditing) {
@@ -187,7 +212,7 @@ const CatererDashboardProfile = () => {
           {/* Edit/Cancel button below banner top-right */}
           <button
             onClick={handleEditToggle}
-            className="absolute right-3 top-[calc(100%+10px)] bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700 font-semibold z-30"
+            className="absolute cursor-pointer right-3 top-[calc(100%+10px)] bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700 font-semibold z-30"
             type="button"
           >
             {isEditing ? "Cancel" : "Edit"}
@@ -300,7 +325,7 @@ const CatererDashboardProfile = () => {
         {isEditing && (
           <motion.button
             onClick={handleSave}
-            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-semibold"
+            className="bg-green-600 cursor-pointer text-white px-6 py-2 rounded hover:bg-green-700 font-semibold"
             type="button"
             variants={fadeInUp}
           >

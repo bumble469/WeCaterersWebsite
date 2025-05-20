@@ -18,7 +18,7 @@ const Header = ({ links, setActiveTab, activeTab, cartContains }) => {
 
     const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const logoutUrl = type === "user" ? '/api/auth/user/logout' : '/api/auth/caterer/logout';
-    const refreshUrl = type === "user" ? '/api/auth/user/refreshtoken' : '/api/auth/caterer/refresh-token';
+    const refreshUrl = type === "user" ? '/api/auth/user/refreshtoken' : '/api/auth/caterer/refreshtoken';
 
     try {
       const response = await axios.post(logoutUrl, {}, { withCredentials: true });
@@ -37,7 +37,6 @@ const Header = ({ links, setActiveTab, activeTab, cartContains }) => {
         return;
       }
     } catch (err) {
-      // Check for unauthorized (token expired)
       if (err.response?.status === 401) {
         try {
           const refreshResponse = await axios.post(refreshUrl, {}, { withCredentials: true });
@@ -63,7 +62,6 @@ const Header = ({ links, setActiveTab, activeTab, cartContains }) => {
           console.log("Token refresh failed:", refreshErr.message);
         }
       }
-      // Final fallback error (only runs if everything above fails)
       console.log("logout failed!", err.message);
       toast.error("Logout failed!", {
         autoClose: 1000,

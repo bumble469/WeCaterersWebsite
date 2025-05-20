@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Header from "@/components/headers/header";
 import { motion } from "framer-motion";
 import {
@@ -20,7 +20,9 @@ const Caterers = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedOrderCaterer, setSelectedOrderCaterer] = useState(null);
   const [cartItems, setCartItems] = useState([]); 
-  const cartContainsItems = cartItems.length > 0;
+  
+  const cartContainsItems = useMemo(() => cartItems.length > 0, [cartItems]);
+
 
   const renderContent = () => {
     switch (activeTab) {

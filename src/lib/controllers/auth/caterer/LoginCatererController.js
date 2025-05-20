@@ -26,17 +26,39 @@ export const loginCaterer = async (body) => {
       return { status: 401, data: { error: 'Invalid email or password!' } };
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { cateringid: caterer.cateringid.toString(), email: caterer.email },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '2m' }
     );
+
+    const refreshToken = jwt.sign(
+      { cateringid: caterer.cateringid.toString(), email: caterer.email },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '2d' }
+    );
+
+    await prisma.refresh_tokens.deleteMany({
+      where:{
+        catererid: caterer.cateringid
+      }
+    });
+
+    await prisma.refresh_tokens.create({
+      data:{
+        token:refreshToken,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        userid: null,
+        catererid: caterer.cateringid
+      }
+    })
 
     return {
       status: 200,
       data: {
         message: 'Login successful!',
-        token,
+        accessToken,
+        refreshToken,
         caterer: {
           cateringid: caterer.cateringid.toString(),
           cateringname: caterer.cateringname,

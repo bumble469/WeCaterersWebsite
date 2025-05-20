@@ -24,7 +24,24 @@ const CatererDashboardOverview = () => {
         });
         setData(res.data);
       } catch (err) {
-        console.error('Failed to fetch caterer overview:', err);
+        if (err.response?.status === 401) {
+          try {
+            const refreshRes = await axios.post('/api/auth/caterer/refreshtoken', {}, {
+              withCredentials: true,
+            });
+
+            if (refreshRes.status === 200) {
+              const retryRes = await axios.get('/api/caterer/overview', {
+                withCredentials: true,
+              });
+              setData(retryRes.data);
+              return;
+            }
+          } catch (refreshErr) {
+            console.error("Token refresh failed:", refreshErr.message);
+          }
+        }
+        console.error('Failed to fetch caterer overview:', err.message);
       }
     };
 
