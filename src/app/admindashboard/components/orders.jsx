@@ -1,55 +1,19 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const sampleOrders = [
-  {
-    id: 'ORD-1001',
-    user: 'Alice Johnson',
-    caterer: 'Delicious Bites',
-    date: '2025-05-10',
-    status: 'Completed',
-    total: 120.5,
-    items: [
-      { name: 'Veg Sandwich', quantity: 2, price: 5.0 },
-      { name: 'Fruit Salad', quantity: 1, price: 7.5 },
-    ],
-  },
-  {
-    id: 'ORD-1002',
-    user: 'Bob Smith',
-    caterer: 'Tasty Treats',
-    date: '2025-05-11',
-    status: 'Pending',
-    total: 89.0,
-    items: [
-      { name: 'Chicken Wrap', quantity: 3, price: 8.0 },
-      { name: 'Lemonade', quantity: 3, price: 3.0 },
-    ],
-  },
-  {
-    id: 'ORD-1003',
-    user: 'Clara Lee',
-    caterer: 'Gourmet Feast',
-    date: '2025-05-09',
-    status: 'Cancelled',
-    total: 45.0,
-    items: [
-      { name: 'Pasta', quantity: 1, price: 12.0 },
-      { name: 'Garlic Bread', quantity: 1, price: 5.0 },
-    ],
-  },
-];
-
 const statusColors = {
-  Completed: 'bg-green-100 text-green-800',
+  Delivered: 'bg-green-100 text-green-800',
   Pending: 'bg-yellow-100 text-yellow-800',
   Cancelled: 'bg-red-100 text-red-800',
+  Rejected: 'bg-gray-100 text-gray-800',
 };
 
-const statuses = ['Pending', 'Completed', 'Cancelled'];
+const statuses = ['Pending', 'Delivered', 'Cancelled', 'Rejected'];
 
 const AdminOrders = () => {
+  const [orders, setOrders] = useState([]);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterDate, setFilterDate] = useState('');
@@ -69,19 +33,51 @@ const AdminOrders = () => {
     setFilterStatus(newSet);
   };
 
+  const mapApiOrderToFrontend = (apiOrder) => ({
+    id: `ORD-${apiOrder.orderid}`,
+    user: apiOrder.username,
+    caterer: apiOrder.cateringname,
+    date: apiOrder.order_date.split('T')[0], // e.g. "2025-05-21"
+    status: apiOrder.status,
+    total: parseFloat(apiOrder.total_price),
+    items: apiOrder.items.map((item) => ({
+      id: item.itemid,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price || 0,
+    })),
+    });
+
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get('/api/admin/orders', { withCredentials: true });
+      setOrders(response.data.map(mapApiOrderToFrontend));
+    } catch (error) {
+      if (error.response?.status === 401) {
+        try {
+          await axios.post('/api/auth/admin/refreshtoken', {}, { withCredentials: true });
+          const retryResponse = await axios.get('/api/admin/orders', { withCredentials: true });
+          setOrders(retryResponse.data.map(mapApiOrderToFrontend));
+        } catch (refreshError) {
+          console.error('Refresh token failed, please login again.');
+        }
+      } else {
+        console.error('Failed to fetch orders:', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
   const filteredOrders = useMemo(() => {
-    return sampleOrders.filter((order) => {
-      // Filter by date if set
-      if (filterDate) {
-        if (order.date !== filterDate) return false;
-      }
-      // Filter by status if any status selected
-      if (filterStatus.size > 0 && !filterStatus.has(order.status)) {
-        return false;
-      }
+    return orders.filter((order) => {
+      if (filterDate && order.date !== filterDate) return false;
+      if (filterStatus.size > 0 && !filterStatus.has(order.status)) return false;
       return true;
     });
-  }, [filterDate, filterStatus]);
+  }, [filterDate, filterStatus, orders]);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 relative">
@@ -131,7 +127,7 @@ const AdminOrders = () => {
                       onChange={() => toggleStatus(status)}
                       className="form-checkbox h-4 w-4 text-blue-600"
                     />
-                    <span className='text-gray-700'>{status}</span>
+                    <span className="text-gray-700">{status}</span>
                   </label>
                 ))}
               </div>
@@ -150,75 +146,97 @@ const AdminOrders = () => {
         </AnimatePresence>
       </div>
 
-
-      <div className="space-y-4 mt-10">
-        {filteredOrders.length === 0 && (
+      <div className="mt-10">
+        {filteredOrders.length === 0 ? (
           <p className="text-center text-gray-500">No orders match the selected filters.</p>
+        ) : (
+          filteredOrders.map((order) => (
+            <motion.div
+              key={order.id}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="mb-6 border rounded-lg shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => toggleExpand(order.id)}
+            >
+              {/* Order Summary Table */}
+              <table className="w-full text-left table-fixed border-collapse">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-4 font-semibold text-blue-800 w-1/4">Order ID</th>
+                    <th className="p-4 font-semibold text-gray-500 w-1/4">User</th>
+                    <th className="p-4 font-semibold text-gray-500 w-1/4">Caterer</th>
+                    <th className="p-4 font-semibold text-gray-500 w-1/5">Date</th>
+                    <th className="p-4 font-semibold text-gray-500 w-1/5">Status</th>
+                    <th className="p-4 font-semibold text-gray-500 w-1/6 text-right">Total ($)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-white hover:bg-blue-50 transition-colors">
+                    <td className="p-4 font-semibold text-blue-700">{order.id}</td>
+                    <td className="p-4 text-gray-500">{order.user}</td>
+                    <td className="p-4 text-gray-500">{order.caterer}</td>
+                    <td className="p-4 text-gray-500">{new Date(order.date).toLocaleDateString()}</td>
+                    <td className="p-4 text-gray-500">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                          statusColors[order.status] || 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="p-4 font-semibold text-right text-gray-500">&#8377;{order.total.toFixed(2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Expandable Order Items */}
+              <AnimatePresence>
+                {expandedOrder === order.id && (
+                  <motion.div
+                    key="details"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="px-5 pb-4 border-t bg-gray-50"
+                  >
+                    <h3 className="font-semibold mb-3 text-gray-800 mt-4">Order Items</h3>
+                    <table className="w-full text-left table-fixed border-collapse shadow-sm">
+                      <thead className="bg-gray-200">
+                        <tr>
+                          <th className="p-3 font-medium text-gray-700 w-1/6">Item ID</th>
+                          <th className="p-3 font-medium text-gray-700 w-3/6">Name</th>
+                          <th className="p-3 font-medium text-gray-700 w-1/6 text-center">Quantity</th>
+                          <th className="p-3 font-medium text-gray-700 w-1/6 text-right">Price ($)</th>
+                          <th className="p-3 font-medium text-gray-700 w-1/6 text-right">Total ($)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {order.items.map((item, i) => (
+                          <tr
+                            key={i}
+                            className={i % 2 === 0 ? 'bg-white' : 'bg-gray-100'}
+                          >
+                            <td className="p-3 text-gray-500">{item.id || 'N/A'}</td>
+                            <td className="p-3 text-gray-500">{item.name}</td>
+                            <td className="p-3 text-center text-gray-500">{item.quantity}</td>
+                            <td className="p-3 text-right text-gray-500">{item.price.toFixed(2)}</td>
+                            <td className="p-3 text-right text-gray-500">{(item.price * item.quantity).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))
         )}
-
-        {filteredOrders.map((order) => (
-          <motion.div
-            key={order.id}
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => toggleExpand(order.id)}
-          >
-            {/* Order Summary */}
-            <div className="flex justify-between items-center px-5 py-4">
-              <div className="flex flex-col space-y-1">
-                <p className="font-semibold text-lg text-blue-700">{order.id}</p>
-                <p className="text-gray-700">
-                  User: <span className="font-medium">{order.user}</span>
-                </p>
-                <p className="text-gray-700">
-                  Caterer: <span className="font-medium">{order.caterer}</span>
-                </p>
-              </div>
-
-              <div className="flex flex-col items-end space-y-1">
-                <p className="text-gray-600">{new Date(order.date).toLocaleDateString()}</p>
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                    statusColors[order.status] || 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {order.status}
-                </span>
-                <p className="text-gray-900 font-semibold">${order.total.toFixed(2)}</p>
-              </div>
-            </div>
-
-            {/* Expandable Details */}
-            <AnimatePresence>
-              {expandedOrder === order.id && (
-                <motion.div
-                  key="details"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="px-5 pb-4 border-t"
-                >
-                  <h3 className="font-semibold mb-2 text-gray-800">Order Items</h3>
-                  <ul className="space-y-1">
-                    {order.items.map((item, i) => (
-                      <li key={i} className="flex justify-between text-gray-700">
-                        <span>
-                          {item.name} x{item.quantity}
-                        </span>
-                        <span>${(item.price * item.quantity).toFixed(2)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        ))}
       </div>
+
     </div>
   );
 };

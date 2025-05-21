@@ -1,93 +1,240 @@
 'use client';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaSearch, FaEdit, FaBan } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaSearch, FaSyncAlt, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+
+const statusColors = {
+  Active: 'bg-green-100 text-green-800',
+  Inactive: 'bg-red-100 text-red-800',
+  Pending: 'bg-yellow-100 text-yellow-800',
+  Suspended: 'bg-gray-100 text-gray-700',
+};
 
 const AdminCaterers = () => {
   const [search, setSearch] = useState('');
+  const [caterers, setCaterers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [expandedIds, setExpandedIds] = useState([]);
 
-  const caterers = [
-    { id: 1, name: 'Delish Bites', email: 'contact@delish.com', service: 'Veg & Non-Veg', status: 'Active' },
-    { id: 2, name: 'Spice Kitchen', email: 'spice@kitchen.com', service: 'Veg Only', status: 'Pending' },
-    { id: 3, name: 'Royal Caterers', email: 'info@royalcaterers.com', service: 'Non-Veg Only', status: 'Suspended' },
-    { id: 4, name: 'Urban Treats', email: 'urbantreats@cater.com', service: 'All Types', status: 'Active' },
-  ];
+  const fetchCaterers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.get('/api/admin/caterers', {withCredentials: true});
+      setCaterers(res.data);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        try {
+          const refreshRes = await axios.post('/api/auth/admin/refreshtoken', {}, { withCredentials: true });
+          if(refreshRes.status !== 200) {
+            const retryRes = await axios.get('/api/admin/caterers', {}, { withCredentials: true });
+            setCaterers(retryRes.data);
+          }
+        } catch {
+          setError('Session expired. Please log in again.');
+          console.error('Session expired. Please log in again.');
+        }
+      } else {
+        setError('Failed to fetch caterers.');
+        console.error('Failed to fetch caterers:', error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const filteredCaterers = caterers.filter(caterer =>
-    caterer.name.toLowerCase().includes(search.toLowerCase()) ||
-    caterer.email.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    fetchCaterers();
+  }, []);
+
+  const filteredCaterers = caterers.filter(
+    (caterer) =>
+      caterer.cateringname.toLowerCase().includes(search.toLowerCase()) ||
+      caterer.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const toggleExpand = (id) => {
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id]
+    );
+  };
 
   return (
     <motion.div
-      className="bg-white rounded-lg shadow-md p-6"
+      className="w-full max-w-none bg-gray-50 rounded-xl shadow-lg p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">Manage Caterers</h2>
+      <div className="flex justify-between items-center mb-5 border-b pb-2">
+        <h2 className="text-2xl font-semibold text-gray-800">Manage Caterers</h2>
+        <button
+          onClick={fetchCaterers}
+          aria-label="Refresh"
+          className="p-2 rounded-md hover:bg-gray-200 transition-colors"
+          title="Refresh Caterers"
+        >
+          <FaSyncAlt className="text-gray-600" />
+        </button>
+      </div>
 
       {/* Search */}
-      <div className="flex items-center gap-2 mb-4 bg-white rounded-md px-4 py-2 shadow-sm max-w-md">
+      <div className="flex items-center gap-2 mb-5 bg-white rounded-md px-3 py-2 shadow-sm w-full max-w-md">
         <FaSearch className="text-gray-500" />
         <input
           type="text"
           placeholder="Search caterers..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="outline-none w-full bg-transparent text-gray-500"
+          className="outline-none w-full bg-transparent text-gray-600 text-sm"
         />
       </div>
 
-      {/* Caterers Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-            <tr>
-              <th className="px-6 py-3">Name</th>
-              <th className="px-6 py-3">Email</th>
-              <th className="px-6 py-3">Service Type</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCaterers.length > 0 ? (
-              filteredCaterers.map((caterer, index) => (
-                <motion.tr
-                  key={caterer.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="border-t hover:bg-gray-50"
-                >
-                  <td className="px-6 py-4 font-medium text-gray-800">{caterer.name}</td>
-                  <td className="px-6 py-4 text-gray-800">{caterer.email}</td>
-                  <td className="px-6 py-4 text-gray-800">{caterer.service}</td>
-                  <td className={`px-6 py-4 font-semibold ${caterer.status === 'Active' ? 'text-green-600' : caterer.status === 'Suspended' ? 'text-red-500' : 'text-yellow-500'}`}>
-                    {caterer.status}
-                  </td>
-                  <td className="px-6 py-4 space-x-2">
-                    <button className="text-blue-600 hover:text-blue-800">
-                      <FaEdit />
-                    </button>
-                    <button className="text-red-500 hover:text-red-700">
-                      <FaBan />
-                    </button>
-                  </td>
-                </motion.tr>
-              ))
-            ) : (
-              <tr>
-                <td className="px-6 py-4 text-gray-500 italic" colSpan="5">
-                  No caterers found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {loading ? (
+        <p className="text-gray-500 text-sm animate-pulse">Loading caterers...</p>
+      ) : error ? (
+        <p className="text-red-600 text-sm italic">{error}</p>
+      ) : filteredCaterers.length === 0 ? (
+        <p className="text-gray-500 italic text-sm">No caterers found.</p>
+      ) : (
+        filteredCaterers.map((caterer) => {
+          const isExpanded = expandedIds.includes(caterer.cateringid);
+          return (
+            <motion.div
+              key={caterer.cateringid}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer mb-8 p-4 bg-white text-sm"
+            >
+              {/* Minimal info row */}
+              <div
+                className="flex justify-between items-center px-2 py-2 hover:bg-gray-100 transition-colors cursor-pointer"
+                onClick={() => toggleExpand(caterer.cateringid)}
+                aria-expanded={isExpanded}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    toggleExpand(caterer.cateringid);
+                  }
+                }}
+              >
+                <div className="flex flex-wrap md:flex-nowrap gap-x-8 gap-y-1 text-sm text-gray-800 font-medium">
+                  <span className="min-w-[140px]">
+                    <span className="text-gray-500 mr-1">ID:</span> #{caterer.cateringid}
+                  </span>
+                  <span className="min-w-[160px] truncate">
+                    <span className="text-gray-500 mr-1">Name:</span> {caterer.cateringname}
+                  </span>
+                  <span className="min-w-[160px] truncate">
+                    <span className="text-gray-500 mr-1">Owner:</span> {caterer.ownername}
+                  </span>
+                  <span className="min-w-[120px]">
+                    <span className="text-gray-500 mr-1">Rating:</span> {caterer.overallrating ?? 'N/A'}
+                  </span>
+                </div>
+                <div className="text-gray-500 ml-3">
+                  {isExpanded ? <FaChevronUp size={16} /> : <FaChevronDown size={16} />}
+                </div>
+              </div>
+
+
+              {/* Expanded details */}
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-4 border-t pt-4 text-xs text-gray-700"
+                  >
+                    <h3 className="text-lg font-semibold mb-2 border-b pb-1 text-gray-800">Catering Info</h3>
+                    <div className="flex flex-col md:flex-row gap-6 mb-4">
+                      <table className="flex-1 min-w-[280px] table-fixed text-left border-collapse">
+                        <tbody>
+                          {[
+                            ['Email', caterer.email],
+                            ['Owner', caterer.ownername],
+                            ['Registered Date', new Date(caterer.latestorderdate).toLocaleDateString()],
+                            ['Status', <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Active</span>],
+                            ['Total Orders', caterer.totalorders],
+                            ['Confirmed Orders', caterer.confirmedorders],
+                            ['Delivered Orders', caterer.deliveredorders],
+                            ['Cancelled Orders', caterer.cancelledorders],
+                          ].map(([label, value], idx) => (
+                            <tr key={label} className={`${idx % 2 === 0 ? 'bg-gray-50' : ''} border-b border-gray-200`}>
+                              <th className="py-2 pr-2 font-semibold text-gray-700 w-1/3">{label}</th>
+                              <td className="py-2 text-gray-800">{value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      <table className="flex-1 min-w-[280px] table-fixed text-left border-collapse">
+                        <tbody>
+                          {[
+                            ['Address', caterer.address],
+                            ['Description', caterer.description],
+                            ['Event Type', caterer.eventtype],
+                            ['Price Range', `₹${caterer.pricerange}`],
+                            ['Contact Number', caterer.contact],
+                          ].map(([label, value], idx) => (
+                            <tr key={label} className={`${idx % 2 === 0 ? 'bg-gray-50' : ''} border-b border-gray-200`}>
+                              <th className="py-2 pr-2 font-semibold text-gray-700 w-1/3">{label}</th>
+                              <td className="py-2 text-gray-800">{value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <h3 className="text-lg font-semibold mb-2 border-b pb-1 text-gray-800">Menu and Services</h3>
+                    <div className="flex flex-col md:flex-row gap-6">
+                      <table className="flex-1 min-w-[280px] table-fixed text-left border-collapse">
+                        <tbody>
+                          {[
+                            ['Total Menu Items', caterer.totalmenuitems],
+                            ['Menu Items Delivered', caterer.totalmenuitemsdelivered],
+                            ['Number of Ratings', caterer.numberofratings],
+                            ['Average User Rating', caterer.averageuserrating],
+                          ].map(([label, value], idx) => (
+                            <tr key={label} className={`${idx % 2 === 0 ? 'bg-gray-50' : ''} border-b border-gray-200`}>
+                              <th className="py-2 pr-2 font-semibold text-gray-700 w-1/3">{label}</th>
+                              <td className="py-2 text-gray-800">{value ?? 'N/A'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      <table className="flex-1 min-w-[280px] table-fixed text-left border-collapse">
+                        <tbody>
+                          {[
+                            ['Total Services', caterer.totalservices],
+                            ['Available Services', caterer.availableservices],
+                          ].map(([label, value], idx) => (
+                            <tr key={label} className={`${idx % 2 === 0 ? 'bg-gray-50' : ''} border-b border-gray-200`}>
+                              <th className="py-2 pr-2 font-semibold text-gray-700 w-1/3">{label}</th>
+                              <td className="py-2 text-gray-800">{value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+            </motion.div>
+          );
+        })
+      )}
     </motion.div>
+
   );
 };
 
