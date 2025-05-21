@@ -1,29 +1,17 @@
 'use client';
-import { FaUsers, FaConciergeBell, FaShoppingCart, FaChartLine } from 'react-icons/fa';
-import { motion } from 'framer-motion';
 
-const stats = [
-  {
-    name: 'Total Users',
-    count: 1200,
-    icon: <FaUsers className="text-blue-500 text-3xl" />,
-  },
-  {
-    name: 'Total Caterers',
-    count: 250,
-    icon: <FaConciergeBell className="text-green-500 text-3xl" />,
-  },
-  {
-    name: 'Total Orders',
-    count: 5400,
-    icon: <FaShoppingCart className="text-orange-500 text-3xl" />,
-  },
-  {
-    name: 'Monthly Revenue',
-    count: '₹8.5L',
-    icon: <FaChartLine className="text-purple-500 text-3xl" />,
-  },
-];
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import {
+  FaUsers,
+  FaConciergeBell,
+  FaShoppingCart,
+  FaClipboardCheck,
+  FaTruck,
+  FaTimesCircle,
+  FaTools,
+} from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -36,6 +24,55 @@ const cardVariants = {
 };
 
 const AdminOverview = () => {
+  const [stats, setStats] = useState([
+    { name: 'Total Users', count: '-', icon: <FaUsers className="text-blue-500 text-3xl" /> },
+    { name: 'Total Caterers', count: '-', icon: <FaConciergeBell className="text-green-500 text-3xl" /> },
+    { name: 'Orders Received', count: '-', icon: <FaShoppingCart className="text-orange-500 text-3xl" /> },
+    { name: 'Confirmed Orders', count: '-', icon: <FaClipboardCheck className="text-teal-500 text-3xl" /> },
+    { name: 'Delivered Orders', count: '-', icon: <FaTruck className="text-purple-500 text-3xl" /> },
+    { name: 'Cancelled Orders', count: '-', icon: <FaTimesCircle className="text-red-500 text-3xl" /> },
+    { name: 'Services Delivered', count: '-', icon: <FaTools className="text-indigo-500 text-3xl" /> },
+  ]);
+
+  const fetchOverview = async () => {
+    try {
+      const res = await axios.get('/api/admin/overview', { withCredentials: true });
+      const data = res.data;
+      setStats([
+        { name: 'Total Users', count: data.totalUsers, icon: <FaUsers className="text-blue-500 text-3xl" /> },
+        { name: 'Total Caterers', count: data.totalCaterers, icon: <FaConciergeBell className="text-green-500 text-3xl" /> },
+        { name: 'Orders Received', count: data.ordersReceived, icon: <FaShoppingCart className="text-orange-500 text-3xl" /> },
+        { name: 'Confirmed Orders', count: data.confirmedOrders, icon: <FaClipboardCheck className="text-teal-500 text-3xl" /> },
+        { name: 'Delivered Orders', count: data.deliveredOrders, icon: <FaTruck className="text-purple-500 text-3xl" /> },
+        { name: 'Cancelled Orders', count: data.cancelledOrders, icon: <FaTimesCircle className="text-red-500 text-3xl" /> },
+        { name: 'Services Delivered', count: data.servicesDelivered, icon: <FaTools className="text-indigo-500 text-3xl" /> },
+      ]);
+    } catch (err) {
+      if (err.response?.status === 401) {
+        try {
+          await axios.post('/api/auth/admin/refreshtoken', { withCredentials: true });
+          const retryRes = await axios.get('/api/admin/overview', { withCredentials: true });
+          const data = retryRes.data;
+          setStats([
+            { name: 'Total Users', count: data.totalUsers, icon: <FaUsers className="text-blue-500 text-3xl" /> },
+            { name: 'Total Caterers', count: data.totalCaterers, icon: <FaConciergeBell className="text-green-500 text-3xl" /> },
+            { name: 'Orders Received', count: data.ordersReceived, icon: <FaShoppingCart className="text-orange-500 text-3xl" /> },
+            { name: 'Confirmed Orders', count: data.confirmedOrders, icon: <FaClipboardCheck className="text-teal-500 text-3xl" /> },
+            { name: 'Delivered Orders', count: data.deliveredOrders, icon: <FaTruck className="text-purple-500 text-3xl" /> },
+            { name: 'Cancelled Orders', count: data.cancelledOrders, icon: <FaTimesCircle className="text-red-500 text-3xl" /> },
+            { name: 'Services Delivered', count: data.servicesDelivered, icon: <FaTools className="text-indigo-500 text-3xl" /> },
+          ]);
+        } catch {
+          setStats(prev => prev); // or show some error
+        }
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    fetchOverview();
+  }, []);
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard Overview</h1>

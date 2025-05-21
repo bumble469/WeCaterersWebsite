@@ -49,9 +49,10 @@ export const loginCaterer = async (body) => {
         token:refreshToken,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         userid: null,
-        catererid: caterer.cateringid
+        catererid: caterer.cateringid,
+        adminid: null,
       }
-    })
+    });
 
     return {
       status: 200,

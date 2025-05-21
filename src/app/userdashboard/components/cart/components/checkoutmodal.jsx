@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 const UserCheckout = ({ cart, setShowModal, total, handleCartFetch }) => {
   const [address, setAddress] = useState('');
 
-  // States for notes parts (without section)
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [additionalPointers, setAdditionalPointers] = useState('');

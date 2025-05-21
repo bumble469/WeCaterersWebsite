@@ -21,8 +21,7 @@ const Caterers = () => {
   const [selectedOrderCaterer, setSelectedOrderCaterer] = useState(null);
   const [cartItems, setCartItems] = useState([]); 
   
-  const cartContainsItems = useMemo(() => cartItems.length > 0, [cartItems]);
-
+  const cartContainsItems = useMemo(() => cartItems.length > 0, [activeTab]);
 
   const renderContent = () => {
     switch (activeTab) {

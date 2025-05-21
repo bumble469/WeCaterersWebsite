@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const loginUser = async (body) => {
+export const loginAdmin = async (body) => {
   const { email, password } = body;
 
   if (!email || !password) {
@@ -12,35 +12,35 @@ export const loginUser = async (body) => {
   }
 
   try {
-    const user = await prisma.user.findUnique({
+    const admin = await prisma.admin.findUnique({
       where: { email },
     });
 
-    if (!user) {
+    if (!admin) {
       return { status: 401, data: { error: 'Invalid email or password!' } };
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, admin.pas);
 
     if (!isMatch) {
       return { status: 401, data: { error: 'Invalid email or password!' } };
     }
 
     const accessToken = jwt.sign(
-      { userid: user.userid.toString(), email: user.email },
+      { adminid: admin.id.toString(), email: admin.email },
       process.env.JWT_SECRET,
       { expiresIn: '2m' }
     );
 
     const refreshToken = jwt.sign(
-      { userid: user.userid.toString(), email: user.email },
+      { adminid: admin.id.toString(), email: admin.email },
       process.env.JWT_REFRESH_SECRET,
       { expiresIn: '2d' }
     );
 
     await prisma.refresh_tokens.deleteMany({
       where: {
-        userid: user.userid,
+        adminid: admin.id,
       },
     });
 
@@ -48,9 +48,9 @@ export const loginUser = async (body) => {
       data: {
         token: refreshToken,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        userid: user.userid,
+        userid: null,
         catererid: null,
-        adminid: null,
+        adminid: BigInt(admin.id),
       }
     });
 
@@ -60,10 +60,10 @@ export const loginUser = async (body) => {
         message: 'Login successful!',
         accessToken,
         refreshToken,
-        user: {
-          userid: user.userid.toString(),
-          fullname: user.fullname,
-          email: user.email,
+        admin: {
+          id: admin.id.toString(),
+          email: admin.email,
+          createdat: admin.createdat,
         },
       },
     };

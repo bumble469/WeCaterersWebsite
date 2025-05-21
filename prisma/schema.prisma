@@ -117,6 +117,7 @@ model refresh_tokens {
 
   userid    BigInt?   
   catererid BigInt?   
+  adminid BigInt?
 }
 
 model caterer_ratings {
@@ -129,7 +130,12 @@ model caterer_ratings {
   @@unique([userid, cateringid])
 }
 
-
+model admin{
+  id BigInt @id @default(autoincrement())
+  email String @unique
+  pas String
+  createdat DateTime @default(now())
+}
 
 
 

@@ -38,7 +38,7 @@ const UserOrders = () => {
               items: [],
               total: parseFloat(total_price),
               status,
-              isPast: ['Delivered', 'Cancelled'].includes(status),
+              isPast: ['Delivered', 'Cancelled', 'Rejected'].includes(status),
               notes,
             };
           }
@@ -77,7 +77,7 @@ const UserOrders = () => {
                   items: [],
                   total: parseFloat(total_price),
                   status,
-                  isPast: ['Delivered', 'Cancelled'].includes(status),
+                  isPast: ['Delivered', 'Cancelled', 'Rejected'].includes(status),
                   notes,
                 };
               }
@@ -214,9 +214,9 @@ const UserOrders = () => {
     }
   };
 
-
-  const currentOrders = orders.filter(order => !order.isPast);
-  const pastOrders = orders.filter(order => order.isPast);
+  const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const currentOrders = sortedOrders.filter(order => !order.isPast);
+  const pastOrders = sortedOrders.filter(order => order.isPast);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -292,7 +292,10 @@ const UserOrders = () => {
                         </span>
                       </>
                     ) : (
-                      <p className='font-bold'>{order.status}</p>
+                      <>
+                        <p className='font-bold'>{order.status}</p>
+                        {order.status == "Rejected" && (<p className='text-xs'>Sorry! We were unable to take this order</p>)}
+                      </>
                     )}
                   </div>
                 </div>

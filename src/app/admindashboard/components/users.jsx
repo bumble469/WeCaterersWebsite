@@ -1,20 +1,46 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FaSearch, FaEdit, FaBan } from 'react-icons/fa';
 
 const AdminUsers = () => {
+  const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const users = [
-    { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Customer', status: 'Active' },
-    { id: 2, name: 'Bob Singh', email: 'bob@example.com', role: 'Customer', status: 'Suspended' },
-    { id: 3, name: 'Charlie Patel', email: 'charlie@example.com', role: 'Customer', status: 'Active' },
-    { id: 4, name: 'Diana Roy', email: 'diana@example.com', role: 'Customer', status: 'Pending' },
-  ];
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('/api/admin/users');
+      setUsers(res.data);
+      setError('');
+    } catch (err) {
+      if (err.response?.status === 401) {
+        // Try to refresh token
+        try {
+          await axios.get('/api/admin/refresh'); // Adjust path based on your API
+          const retry = await axios.get('/api/admin/users');
+          setUsers(retry.data);
+          setError('');
+        } catch (refreshErr) {
+          setError('Session expired. Please log in again.');
+        }
+      } else {
+        setError('Failed to load users.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(search.toLowerCase()) ||
+    user.fullname.toLowerCase().includes(search.toLowerCase()) ||
     user.email.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -39,54 +65,62 @@ const AdminUsers = () => {
         />
       </div>
 
-      {/* Users Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-            <tr>
-              <th className="px-6 py-3">Name</th>
-              <th className="px-6 py-3">Email</th>
-              <th className="px-6 py-3">Role</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user, index) => (
-                <motion.tr
-                  key={user.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="border-t hover:bg-gray-50"
-                >
-                  <td className="px-6 py-4 font-medium text-gray-800">{user.name}</td>
-                  <td className="px-6 py-4 text-gray-800">{user.email}</td>
-                  <td className="px-6 py-4 text-gray-800">{user.role}</td>
-                  <td className={`px-6 py-4 font-semibold ${user.status === 'Active' ? 'text-green-600' : user.status === 'Suspended' ? 'text-red-500' : 'text-yellow-500'}`}>
-                    {user.status}
-                  </td>
-                  <td className="px-6 py-4 space-x-2">
-                    <button className="text-blue-600 hover:text-blue-800">
-                      <FaEdit />
-                    </button>
-                    <button className="text-red-500 hover:text-red-700">
-                      <FaBan />
-                    </button>
-                  </td>
-                </motion.tr>
-              ))
-            ) : (
+      {/* Status / Error */}
+      {loading ? (
+        <p className="text-gray-600">Loading users...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+          <table className="min-w-full text-sm text-left">
+            <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
               <tr>
-                <td className="px-6 py-4 text-gray-500 italic" colSpan="5">
-                  No users found.
-                </td>
+                <th className="px-6 py-3">Name</th>
+                <th className="px-6 py-3">Email</th>
+                <th className="px-6 py-3">Total Orders</th>
+                <th className="px-6 py-3">Confirmed</th>
+                <th className="px-6 py-3">Delivered</th>
+                <th className="px-6 py-3">Cancelled</th>
+                <th className="px-6 py-3">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user, index) => (
+                  <motion.tr
+                    key={user.userid}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="border-t hover:bg-gray-50"
+                  >
+                    <td className="px-6 py-4 font-medium text-gray-800">{user.fullname}</td>
+                    <td className="px-6 py-4 text-gray-800">{user.email}</td>
+                    <td className="px-6 py-4 text-gray-800">{user.totalorders}</td>
+                    <td className="px-6 py-4 text-blue-700">{user.confirmedorders}</td>
+                    <td className="px-6 py-4 text-green-600">{user.deliveredorders}</td>
+                    <td className="px-6 py-4 text-red-500">{user.cancelledorders}</td>
+                    <td className="px-6 py-4 space-x-2">
+                      <button className="text-blue-600 hover:text-blue-800">
+                        <FaEdit />
+                      </button>
+                      <button className="text-red-500 hover:text-red-700">
+                        <FaBan />
+                      </button>
+                    </td>
+                  </motion.tr>
+                ))
+              ) : (
+                <tr>
+                  <td className="px-6 py-4 text-gray-500 italic" colSpan="7">
+                    No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </motion.div>
   );
 };

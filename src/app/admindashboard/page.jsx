@@ -7,7 +7,6 @@ import {
   FaUsers, 
   FaConciergeBell, 
   FaShoppingCart, 
-  FaUser, 
   FaSignOutAlt 
 } from 'react-icons/fa';
 
@@ -15,7 +14,6 @@ import AdminOverview from "./components/overview";
 import AdminUsers from "./components/users";
 import AdminCaterers from "./components/caterers";
 import AdminOrders from "./components/orders";
-import AdminProfile from "./components/profile";
 
 const CatererDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -30,8 +28,6 @@ const CatererDashboard = () => {
         return <AdminCaterers />;
       case 'orders':
         return <AdminOrders />;
-      case 'profile':
-        return <AdminProfile />;
       default:
         return null;
     }
@@ -42,8 +38,7 @@ const CatererDashboard = () => {
     { name: 'Users', route: '#', tab: 'users', icon: <FaUsers /> },
     { name: 'Caterers', route: '#', tab: 'caterers', icon: <FaConciergeBell /> },
     { name: 'Orders', route: '#', tab: 'orders', icon: <FaShoppingCart /> },
-    { name: 'Profile', route: '#', tab: 'profile', icon: <FaUser /> },
-    { name: 'Logout', route: '/', icon: <FaSignOutAlt /> },
+    { name: 'Logout', route: '/', icon: <FaSignOutAlt />, type:"admin" },
   ];
 
   return (
