@@ -15,6 +15,17 @@ export async function sendEmailVerification({ cateringname, ownername, email, pa
     throw new Error('Email, catering name, owner name, and password are required!');
   }
 
+  const emailExistsInCaterers = await prisma.caterer.findUnique({ where: { email } });
+  const emailExistsInUsers = await prisma.user.findUnique({ where: { email } });
+  const emailExistsInAdmins = await prisma.admin.findUnique({ where: { email } });
+
+  if (emailExistsInCaterers || emailExistsInUsers || emailExistsInAdmins) {
+    return {
+      status: 400,
+      data: { message: "Email already exists in the system" }
+    };
+  }
+
   const verificationCode = generateVerificationCode();
 
   verificationCodes[email] = {

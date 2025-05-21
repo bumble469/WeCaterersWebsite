@@ -182,13 +182,15 @@ const AuthComponent = () => {
         }
       }
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Something went wrong';
+        const message = error.response?.data?.message || error.message || 'Something went wrong';
 
-      if (isLogin) {
-        toast.error('Login Error:', message);
-      } else {
-        toast.error('Signup Error:', message);
-      }
+        toast.error(message, {
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          progress: undefined,
+        });
     } finally{
       setLoading(false);
     }

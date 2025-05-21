@@ -28,6 +28,17 @@ export const sendEmailVerification = async (req) => {
     delete verificationCodes[email];
   }, 60000);
 
+  const emailExistsInCaterers = await prisma.caterer.findUnique({ where: { email:email } });
+  const emailExistsInUsers = await prisma.user.findUnique({ where: { email:email } });
+  const emailExistsInAdmins = await prisma.admin.findUnique({ where: { email:email } });
+
+  if (emailExistsInCaterers || emailExistsInUsers || emailExistsInAdmins) {
+    return {
+      status: 400,
+      data: { message: "Email already exists in the system" }
+    };
+  }
+
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
