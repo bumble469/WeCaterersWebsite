@@ -31,7 +31,8 @@ const CatererDashboardMenu = () => {
 
   const refreshTokenIfNeeded = async () => {
     try {
-      await axios.post('/api/auth/caterer/refreshtoken', { withCredentials: true });
+      const res = await axios.post('/api/auth/caterer/refreshtoken', { withCredentials: true });
+      return res;
     } catch (error) {
       console.error('Token refresh failed:', error.response?.data || error.message);
       toast.error('Session expired. Please log in again.');
@@ -42,13 +43,20 @@ const CatererDashboardMenu = () => {
   const fetchMenuItems = async () => {
     setIsLoading(true);
     try {
-      await refreshTokenIfNeeded();
       const response = await axios.get('/api/caterer/menu', { withCredentials: true });
 
       if (response.status === 200 || response.status === 201) {
         setMenuItems(response.data);
       }
     } catch (err) {
+      if(err.response && err.response.status === 401) {
+        const res = await refreshTokenIfNeeded();
+        if(res.status === 200 || res.status === 201) {
+          fetchMenuItems();
+        } else {
+          toast.error('Session expired. Please log in again.');
+        }
+      }
       toast.error('Failed to fetch menu items');
       console.error(err);
     } finally{
@@ -58,7 +66,6 @@ const CatererDashboardMenu = () => {
 
   const handleAddItem = async (newItem) => {
     try {
-      await refreshTokenIfNeeded();
       const response = await axios.post('/api/caterer/menu', newItem, { withCredentials: true });
 
       if (response.status === 200 || response.status === 201) {
@@ -73,6 +80,14 @@ const CatererDashboardMenu = () => {
         setShowForm(false);
       }
     } catch (err) {
+      if(err.response && err.response.status === 401) {
+        const res = await refreshTokenIfNeeded();
+        if(res.status === 200 || res.status === 201) {
+          handleAddItem(newItem);
+        } else {
+          toast.error('Session expired. Please log in again.');
+        }
+      }
       toast.error('Failed to add item');
       console.error(err);
     }
@@ -80,8 +95,6 @@ const CatererDashboardMenu = () => {
 
   const handleEditMenu = async (menuid, menuData) => {
     try {
-      await refreshTokenIfNeeded();
-
       let base64Image = menuData.image;
       if (menuData.imageFile) {
         base64Image = await toBase64(menuData.imageFile);
@@ -121,6 +134,14 @@ const CatererDashboardMenu = () => {
         });
       }
     } catch (err) {
+      if(err.response && err.response.status === 401) {
+        const res = await refreshTokenIfNeeded();
+        if(res.status === 200 || res.status === 201) {
+          handleEditMenu(menuid, menuData);
+        } else {
+          toast.error('Session expired. Please log in again.');
+        }
+      }
       console.error('Error editing menu:', err);
       toast.error("Error updating menu.");
     }
@@ -128,8 +149,6 @@ const CatererDashboardMenu = () => {
 
   const handleDeleteMenu = async (menuid) => {
     try {
-      await refreshTokenIfNeeded();
-
       const response = await axios.delete('/api/caterer/menu', {
         data: { menuid },
         withCredentials: true,
@@ -145,6 +164,14 @@ const CatererDashboardMenu = () => {
         toast.error('Failed to delete menu item');
       }
     } catch (error) {
+      if(error.response && error.response.status === 401) {
+        const res = await refreshTokenIfNeeded();
+        if(res.status === 200 || res.status === 201) {
+          handleDeleteMenu(menuid);
+        } else {
+          toast.error('Session expired. Please log in again.');
+        }
+      }
       console.error('Delete error:', error.response?.data || error.message);
       toast.error(error.response?.data?.error || 'Error deleting menu item');
     } finally {

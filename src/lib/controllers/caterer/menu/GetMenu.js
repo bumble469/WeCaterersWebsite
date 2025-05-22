@@ -28,7 +28,7 @@ export const getMenu = async (token) => {
       return { status: 403, data: { error: 'Invalid token: cateringid missing' } };
     }
 
-    const menu = await prisma.menu.findMany({
+    const menus = await prisma.menu.findMany({
       where: { cateringid: cateringid, isdeleted: false },
     });
 
@@ -45,7 +45,7 @@ export const getMenu = async (token) => {
 
     return {
       status: 200,
-      data: menu.map(menu => {
+      data: menus.map(menu => {
         const menuItemBuffer = toBuffer(menu.image_data);
         const menuImageBase64 = menuItemBuffer
           ? `data:${getImageMimeType(menuItemBuffer)};base64,${menuItemBuffer.toString('base64')}`
