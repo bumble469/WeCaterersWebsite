@@ -79,7 +79,7 @@ const CatererDashboardProfile = () => {
     } catch (err) {
       if (err.response?.status === 401) {
         const refreshed = await refreshToken();
-        if (refreshed) return fetchProfile(); // Retry once after refreshing
+        if (refreshed) return fetchProfile();
       }
 
       console.error(
@@ -163,10 +163,6 @@ const CatererDashboardProfile = () => {
       }
 
       console.error("Update failed:", error.response?.data || error.message);
-      alert(
-        "Error updating profile: " +
-          (error.response?.data?.error || error.message)
-      );
     }
   };
 

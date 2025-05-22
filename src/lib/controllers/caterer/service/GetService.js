@@ -21,10 +21,16 @@ export const getServices = async (token) => {
 
     return { status: 200, data: services };
   } catch (err) {
-    console.error('Error fetching services:', err);
+    console.error('Error fetching menu:', err);
+
+    if (err.name === 'TokenExpiredError') {
+      return { status: 401, data: { error: 'Token expired' } };
+    }
+
     if (err.name === 'JsonWebTokenError') {
       return { status: 403, data: { error: 'Invalid token' } };
     }
+
     return { status: 500, data: { error: 'Server error' } };
   }
 };

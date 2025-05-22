@@ -25,18 +25,6 @@ const CatererDashboardServices = () => {
     fetchServices();
   }, []);
 
-  const refreshToken = async () => {
-    try {
-      const refreshRes = await axios.post('/api/auth/caterer/refreshtoken', {}, {
-        withCredentials: true,
-      });
-      return refreshRes.status === 200;
-    } catch (err) {
-      console.error("Token refresh failed:", err.message);
-      return false;
-    }
-  };
-
   const fetchServices = async () => {
     setLoading(true);
     try {
@@ -48,11 +36,16 @@ const CatererDashboardServices = () => {
         setServices(response.data);
       }
     } catch (err) {
-      if (err.response?.status === 401) {
-        const refreshed = await refreshToken();
-        if (refreshed) return fetchServices(); 
+      if(err.response && err.response.status === 401) {
+        const refreshRes = await axios.post('/api/auth/caterer/refreshtoken', {}, {
+          withCredentials: true,
+        });
+        if(refreshRes.status === 200 || refreshRes.status === 201) {
+          await fetchServices();
+        } else {
+          toast.error('Session expired. Please log in again.');
+        }
       }
-      toast.error('Failed to fetch services');
       console.error(err);
     } finally{
       setLoading(false);
@@ -92,7 +85,6 @@ const CatererDashboardServices = () => {
         if (refreshed) return handleAddService(service); // Retry
       }
       console.error('Add service error:', error.response?.data || error.message);
-      toast.error(error.response?.data?.error || error.message);
     }
   };
 

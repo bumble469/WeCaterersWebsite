@@ -66,13 +66,12 @@ const CatererDashboardOrders = () => {
           });
 
           if (refreshRes.status === 200) {
-            return fetchOrders();
+            await fetchOrders();
           }
         } catch (refreshErr) {
           console.error("Token refresh failed:", refreshErr.message);
         }
       }
-      toast.error('Error fetching orders. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -93,7 +92,7 @@ const CatererDashboardOrders = () => {
 
       if (response.status === 200) {
         toast.success(`Order #${orderid} updated to ${newStatus}`);
-        fetchOrders();
+        await fetchOrders();
       } else {
         toast.error('Failed to update order.');
       }
@@ -105,13 +104,12 @@ const CatererDashboardOrders = () => {
           });
 
           if (refreshRes.status === 200) {
-            return fetchOrders();
+            await fetchOrders();
           }
         } catch (refreshErr) {
           console.error("Token refresh failed:", refreshErr.message);
         }
       }
-      toast.error('Error updating order. Please try again.');
       console.error(err);
     }
   };

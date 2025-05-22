@@ -35,7 +35,6 @@ const CatererDashboardMenu = () => {
       return res;
     } catch (error) {
       console.error('Token refresh failed:', error.response?.data || error.message);
-      toast.error('Session expired. Please log in again.');
       throw new Error('Token refresh failed');
     }
   };
@@ -52,12 +51,11 @@ const CatererDashboardMenu = () => {
       if(err.response && err.response.status === 401) {
         const res = await refreshTokenIfNeeded();
         if(res.status === 200 || res.status === 201) {
-          fetchMenuItems();
+          await fetchMenuItems();
         } else {
           toast.error('Session expired. Please log in again.');
         }
       }
-      toast.error('Failed to fetch menu items');
       console.error(err);
     } finally{
       setIsLoading(false);
@@ -76,7 +74,7 @@ const CatererDashboardMenu = () => {
           pauseOnHover: false,
           draggable: false,
         });
-        fetchMenuItems();
+        await fetchMenuItems();
         setShowForm(false);
       }
     } catch (err) {
@@ -88,7 +86,6 @@ const CatererDashboardMenu = () => {
           toast.error('Session expired. Please log in again.');
         }
       }
-      toast.error('Failed to add item');
       console.error(err);
     }
   };
@@ -123,7 +120,7 @@ const CatererDashboardMenu = () => {
           pauseOnHover: false,
           draggable: false,
         });
-        fetchMenuItems();
+        await fetchMenuItems();
       } else {
         toast.error("Could not update menu!", {
           autoClose: 1000,
@@ -137,13 +134,12 @@ const CatererDashboardMenu = () => {
       if(err.response && err.response.status === 401) {
         const res = await refreshTokenIfNeeded();
         if(res.status === 200 || res.status === 201) {
-          handleEditMenu(menuid, menuData);
+          await handleEditMenu(menuid, menuData);
         } else {
           toast.error('Session expired. Please log in again.');
         }
       }
       console.error('Error editing menu:', err);
-      toast.error("Error updating menu.");
     }
   };
 
@@ -167,13 +163,12 @@ const CatererDashboardMenu = () => {
       if(error.response && error.response.status === 401) {
         const res = await refreshTokenIfNeeded();
         if(res.status === 200 || res.status === 201) {
-          handleDeleteMenu(menuid);
+          await handleDeleteMenu(menuid);
         } else {
           toast.error('Session expired. Please log in again.');
         }
       }
       console.error('Delete error:', error.response?.data || error.message);
-      toast.error(error.response?.data?.error || 'Error deleting menu item');
     } finally {
       setShowDeleteConfirm(null);
     }

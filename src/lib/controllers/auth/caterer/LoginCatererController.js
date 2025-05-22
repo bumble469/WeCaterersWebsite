@@ -29,7 +29,7 @@ export const loginCaterer = async (body) => {
     const accessToken = jwt.sign(
       { cateringid: caterer.cateringid.toString(), email: caterer.email },
       process.env.JWT_SECRET,
-      { expiresIn: '15s' }
+      { expiresIn: '10m' }
     );
 
     const refreshToken = jwt.sign(

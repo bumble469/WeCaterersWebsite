@@ -29,13 +29,8 @@ const CatererDashboardOverview = () => {
             const refreshRes = await axios.post('/api/auth/caterer/refreshtoken', {}, {
               withCredentials: true,
             });
-
             if (refreshRes.status === 200) {
-              const retryRes = await axios.get('/api/caterer/overview', {
-                withCredentials: true,
-              });
-              setData(retryRes.data);
-              return;
+              await fetchOverview();
             }
           } catch (refreshErr) {
             console.error("Token refresh failed:", refreshErr.message);
