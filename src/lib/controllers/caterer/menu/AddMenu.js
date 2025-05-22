@@ -22,7 +22,6 @@ export const addMenu = async (token, name, description, price, cuisinetype, diet
     let imageBuffer = null;
     if (image) {
       try {
-        // Remove data URL prefix if it exists
         const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
         imageBuffer = Buffer.from(base64Data, 'base64');
       } catch (e) {
@@ -41,6 +40,7 @@ export const addMenu = async (token, name, description, price, cuisinetype, diet
         cuisinetype: cuisinetype || '',
         dietarypreference: dietarypreference || '',
         image_data: imageBuffer || null,
+        isdeleted: false
       },
     });
 

@@ -227,7 +227,11 @@ const UserHome = ({ setSelectedOrderCaterer, setActiveTab, isGuest }) => {
                         <h3 className="text-lg font-semibold">{caterer.cateringname}</h3>
                         <p className="text-sm italic text-gray-600">{caterer.description}</p>
                         <p className="text-sm mt-1">
-                          ⭐ {caterer?.rating} | Starting from {typeof caterer?.pricerange === "string" && caterer.pricerange.includes("-") ? caterer.pricerange.split("-")[0] : "Not available"}
+                          {caterer?.rating || caterer?.pricerange ? (
+                            <>⭐ {caterer.rating} | Starting from {caterer.pricerange.split("-")[0]}</>
+                          ) : (
+                            <>Not available</>
+                          )}
                         </p>
                       </div>
                       <div className="flex justify-between mt-4 gap-2">

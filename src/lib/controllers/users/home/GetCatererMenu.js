@@ -42,7 +42,8 @@ export const getCatererMenu = async (token, cateringid) => {
 
     const menu = await prisma.menu.findMany({
         where:{
-            cateringid:parseInt(cateringid)
+            cateringid:parseInt(cateringid),
+            isdeleted: false
         },
         select: {
             menuid: true,

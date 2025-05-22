@@ -43,7 +43,6 @@ export const userRating = async (token, rating, cateringid) => {
 
     let result;
     if (existing) {
-      // Update by primary key ratingid
       result = await prisma.caterer_ratings.update({
         where: {
           ratingid: existing.ratingid,

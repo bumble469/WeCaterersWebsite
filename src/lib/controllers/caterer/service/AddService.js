@@ -27,6 +27,7 @@ export const addService = async (token, name, description, price, capacity, avai
         price: Number(price),
         capacity: Number(capacity),
         availability: availability !== undefined ? availability : true, 
+        isdeleted: false,
       },
     });
 

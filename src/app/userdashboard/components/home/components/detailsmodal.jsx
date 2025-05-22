@@ -140,15 +140,11 @@ const CatererDetailsModal = ({ caterer, isOpen, onClose, isGuest }) => {
               <h2 className="text-2xl font-semibold text-gray-800">{caterer.cateringname}</h2>
               <p className="text-sm italic text-gray-600">{caterer.description}</p>
               <p className="text-sm text-gray-500 mt-2">
-                ⭐ {caterer?.rating} | Price range &#8377;{
-                  caterer?.pricerange && caterer.pricerange.includes('-') 
-                    ? caterer.pricerange.split('-')[0].trim() 
-                    : "N/A"
-                } - &#8377;{
-                  caterer?.pricerange && caterer.pricerange.includes('-') 
-                    ? caterer.pricerange.split('-')[1].trim() 
-                    : "N/A"
-                }
+                {caterer?.rating || caterer?.pricerange ? (
+                <>⭐ {caterer.rating} | Starting from {caterer.pricerange.split("-")[0]}</>
+                ) : (
+                  <>Not available</>
+                )}
               </p>
               <div className="mt-4 text-gray-700">
                 <h3 className="text-lg font-semibold">

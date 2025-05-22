@@ -52,6 +52,7 @@ model service {
   price       Float
   capacity    Int
   availability Boolean @default(true)
+  isdeleted    Boolean
 
   @@map("services")
 }
@@ -66,6 +67,7 @@ model menu {
   cuisinetype       String?
   dietarypreference String?
   image_data        Bytes?   // for storing image binary data
+  isdeleted         Boolean
 
   @@map("menu")
 }

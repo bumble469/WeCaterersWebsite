@@ -28,8 +28,8 @@ export const getMenu = async (token) => {
       return { status: 403, data: { error: 'Invalid token: cateringid missing' } };
     }
 
-    const services = await prisma.menu.findMany({
-      where: { cateringid: cateringid },
+    const menu = await prisma.menu.findMany({
+      where: { cateringid: cateringid, isdeleted: false },
     });
 
     const toBuffer = (data) => {
@@ -45,16 +45,16 @@ export const getMenu = async (token) => {
 
     return {
       status: 200,
-      data: services.map(service => {
-        const menuItemBuffer = toBuffer(service.image_data);
+      data: menu.map(menu => {
+        const menuItemBuffer = toBuffer(menu.image_data);
         const menuImageBase64 = menuItemBuffer
           ? `data:${getImageMimeType(menuItemBuffer)};base64,${menuItemBuffer.toString('base64')}`
           : null;
 
         return {
-          ...service,
-          menuid: service.menuid.toString(),
-          cateringid: service.cateringid.toString(),
+          ...menu,
+          menuid: menu.menuid.toString(),
+          cateringid: menu.cateringid.toString(),
           image_data: menuImageBase64,
         };
       }),

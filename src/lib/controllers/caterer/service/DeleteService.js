@@ -22,13 +22,14 @@ export const deleteServices = async (token, serviceid) => {
       return { status: 404, data: { error: 'Service not found or unauthorized' } };
     }
 
-    const deletedService = await prisma.service.delete({
+    const deletedService = await prisma.service.update({
       where: { serviceid },
+      data: { isdeleted: true },
     });
 
-    return { status: 200, data: deletedService };
+    return { status: 200, message: 'Service marked as deleted successfully!', data: deletedService };
   } catch (err) {
-    console.error('Error deleting service:', err);
+    console.error('Error soft deleting service:', err);
     if (err.name === 'JsonWebTokenError') {
       return { status: 403, data: { error: 'Invalid token' } };
     }

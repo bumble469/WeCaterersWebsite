@@ -16,7 +16,7 @@ export const getServices = async (token) => {
     }
 
     const services = await prisma.service.findMany({
-      where: { cateringid: cateringid },
+      where: { cateringid: cateringid, isdeleted: false },
     });
 
     return { status: 200, data: services };
