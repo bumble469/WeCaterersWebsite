@@ -15,6 +15,7 @@ const CatererDashboardMenu = () => {
   const [isImageLoading, setIsImageLoading] = useState(false);
   const [editingMenu, setEditingMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     fetchMenuItems();
   }, []);
@@ -38,6 +39,7 @@ const CatererDashboardMenu = () => {
   };
 
   const fetchMenuItems = async () => {
+    setIsLoading(true);
     try {
       await refreshTokenIfNeeded();
       const response = await axios.get('/api/caterer/menu', { withCredentials: true });
@@ -48,6 +50,8 @@ const CatererDashboardMenu = () => {
     } catch (err) {
       toast.error('Failed to fetch menu items');
       console.error(err);
+    } finally{
+      setIsLoading(false);
     }
   };
 
@@ -161,7 +165,7 @@ const CatererDashboardMenu = () => {
 
   return (
     <section className="bg-white rounded-lg shadow-md p-6">
-      {menuItems.length == 0 ? (
+      {isLoading == 0 ? (
         <div className="flex justify-center items-center h-[50vh]">
           <Lottie animationData={loadingicon} loop={true} style={{ height: 50 }} />
         </div>
@@ -298,6 +302,9 @@ const CatererDashboardMenu = () => {
           </AnimatePresence>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {menuItems.length === 0 && (
+                <p className='items-center text-gray-500'>No menu items found.</p>
+              )}
             <AnimatePresence>
               {menuItems.map((item) => (
                 <motion.div

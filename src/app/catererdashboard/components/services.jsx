@@ -12,6 +12,7 @@ const CatererDashboardServices = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [newService, setNewService] = useState({
     name: '',
     description: '',
@@ -37,6 +38,7 @@ const CatererDashboardServices = () => {
   };
 
   const fetchServices = async () => {
+    setLoading(true);
     try {
       const response = await axios.get('/api/caterer/service', {
         withCredentials: true,
@@ -48,10 +50,12 @@ const CatererDashboardServices = () => {
     } catch (err) {
       if (err.response?.status === 401) {
         const refreshed = await refreshToken();
-        if (refreshed) return fetchServices(); // Retry after refreshing
+        if (refreshed) return fetchServices(); 
       }
       toast.error('Failed to fetch services');
       console.error(err);
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -172,7 +176,7 @@ const CatererDashboardServices = () => {
       transition={{ duration: 0.3 }}
       className="bg-white rounded-lg shadow-md p-6"
     >
-      {services.length==0 ? (
+      {loading ? (
         <div className="flex justify-center items-center h-[50vh]">
           <Lottie animationData={loadingicon} loop={true} style={{ height: 50 }} />
         </div>
@@ -271,6 +275,9 @@ const CatererDashboardServices = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence>
+            {services.length === 0 && (
+                <p className='text-gray-500'>No services found.</p>
+            )}
             {services.map((service) => (
               <motion.div
                 key={service.serviceid}
