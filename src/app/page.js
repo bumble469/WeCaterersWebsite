@@ -103,10 +103,10 @@ export default function Home() {
                 Explore
               </button>
               <p className="text-md sm:text-lg text-gray-600 italic mb-4">
-                “Delivering excellence, one plate at a time.”
+                &quot;Delivering excellence, one plate at a time.&quot;
               </p>
               <p className="text-sm sm:text-base text-gray-500">
-                We are dedicated to crafting memorable dining experiences with fresh, high-quality ingredients. Whether it's a grand celebration or an intimate gathering, our team ensures every detail is perfect.
+                We are dedicated to crafting memorable dining experiences with fresh, high-quality ingredients. Whether it&apos;s a grand celebration or an intimate gathering, our team ensures every detail is perfect.
               </p>
               <p className="text-sm sm:text-base text-gray-500 italic mt-2">
                 &quot;Your satisfaction is our commitment – from the first bite to the last.&quot;
@@ -123,7 +123,7 @@ export default function Home() {
 
       <div className="hidden md:w-1/2 md:block w-full h-64 sm:h-auto relative overflow-hidden rounded-tl-[20rem] transition-opacity duration-700 ease-in-out">
         <Image
-          key={activeSection}
+          key={activeSection} 
           src={
             activeSection === 'login'
               ? homelogin
