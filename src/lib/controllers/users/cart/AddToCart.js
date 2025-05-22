@@ -1,7 +1,5 @@
-  import jwt from "jsonwebtoken";
-  import { PrismaClient } from "@prisma/client";
-
-  const prisma = new PrismaClient();
+import jwt from "jsonwebtoken";
+import prisma from '@/lib/prisma/client';
 
 export const addToCart = async (token, cateringid, menuid, serviceid, quantity) => {
   if (!token) {

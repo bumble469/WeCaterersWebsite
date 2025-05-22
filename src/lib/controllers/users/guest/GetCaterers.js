@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma/client';
 
 function getImageMimeType(buffer) {
   if (!buffer || buffer.length < 4) return null;

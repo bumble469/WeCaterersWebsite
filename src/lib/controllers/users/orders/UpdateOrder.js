@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma/client';
 
 export const updateOrderStatus = async (token, orderid, newStatus) => {
   if (!token) {

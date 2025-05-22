@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma/client';
 import jwt from "jsonwebtoken";
 
 export const createOrderFromCart = async (token, cateringid, status, notes = null, total_price) => {
