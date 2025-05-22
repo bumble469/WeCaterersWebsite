@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import Lottie from "lottie-react";
 import loadinglottie from "../../../../assets/images/loadingicon.json";
 
-const UserHome = ({ setSelectedOrderCaterer, setActiveTab }) => {
+const UserHome = ({ setSelectedOrderCaterer, setActiveTab, isGuest }) => {
   const [caterers, setCaterers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -24,42 +24,53 @@ const UserHome = ({ setSelectedOrderCaterer, setActiveTab }) => {
   const [selectedCaterer, setSelectedCaterer] = useState(null);
 
   const fetchCaterers = async () => {
-    setLoading(true);
-    const getCaterers = async () => {
-      return await axios.get("/api/user/home/caterers", { withCredentials: true });
-    };
-    try {
-      let response = await getCaterers();
-
-      if (response.status === 401) {
-        await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
-        response = await getCaterers();
-      }
-      if (response.status === 200) {
-        setCaterers(response.data.data);
+    if(isGuest){
+      setLoading(true);
+      const getGuestCaterers = await axios.get("/api/user/guest");
+      if (getGuestCaterers.status == 200) {
+        setCaterers(getGuestCaterers.data.data);
+        setLoading(false);
       } else {
         toast.error("Error fetching caterers!");
       }
-    } catch (err) {
-      if (err.response && err.response.status === 401) {
-        try {
+    }else{
+      setLoading(true);
+      const getCaterers = async () => {
+        return await axios.get("/api/user/home/caterers", { withCredentials: true });
+      };
+      try {
+        let response = await getCaterers();
+
+        if (response.status === 401) {
           await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
-          const retryResponse = await getCaterers();
-          if (retryResponse.status === 200) {
-            setCaterers(retryResponse.data.data);
-            return;
-          } else {
-            toast.error("Error fetching caterers after token refresh!");
-          }
-        } catch (refreshErr) {
-          toast.error("Session expired. Please login again.");
-          console.log("Token refresh failed:", refreshErr.message);
+          response = await getCaterers();
         }
-      } else {
-        console.log("Error fetching caterers:", err.message);
+        if (response.status === 200) {
+          setCaterers(response.data.data);
+        } else {
+          toast.error("Error fetching caterers!");
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          try {
+            await axios.post("/api/auth/user/refreshtoken", {}, { withCredentials: true });
+            const retryResponse = await getCaterers();
+            if (retryResponse.status === 200) {
+              setCaterers(retryResponse.data.data);
+              return;
+            } else {
+              toast.error("Error fetching caterers after token refresh!");
+            }
+          } catch (refreshErr) {
+            toast.error("Session expired. Please login again.");
+            console.log("Token refresh failed:", refreshErr.message);
+          }
+        } else {
+          console.log("Error fetching caterers:", err.message);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -215,7 +226,7 @@ const UserHome = ({ setSelectedOrderCaterer, setActiveTab }) => {
                         <h3 className="text-lg font-semibold">{caterer.cateringname}</h3>
                         <p className="text-sm italic text-gray-600">{caterer.description}</p>
                         <p className="text-sm mt-1">
-                          ⭐ {caterer?.rating} | Starting from {caterer.pricerange.split("-")[0]}
+                          ⭐ {caterer?.rating} | Starting from {typeof caterer?.pricerange === "string" && caterer.pricerange.includes("-") ? caterer.pricerange.split("-")[0] : "Not available"}
                         </p>
                       </div>
                       <div className="flex justify-between mt-4 gap-2">
@@ -226,8 +237,9 @@ const UserHome = ({ setSelectedOrderCaterer, setActiveTab }) => {
                           View Details
                         </button>
                         <button
+                          disabled={isGuest}
                           onClick={() => handleSelectedCaterer(caterer)}
-                          className="bg-green-600 cursor-pointer text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1"
+                          className={`bg-green-600 cursor-pointer text-white text-sm py-2 px-4 rounded hover:bg-green-700 transition flex-1 ${isGuest ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                           Order From
                         </button>
@@ -245,6 +257,7 @@ const UserHome = ({ setSelectedOrderCaterer, setActiveTab }) => {
         isOpen={isCatererDetailsModalOpen}
         caterer={selectedCaterer}
         onClose={() => setIsCatererDetailsModalOpen(false)}
+        isGuest={isGuest}
       />
     </>
   );

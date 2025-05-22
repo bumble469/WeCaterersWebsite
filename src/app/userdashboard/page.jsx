@@ -15,18 +15,22 @@ import UserCart from "./components/cart/cart";
 import UserOrders from "./components/orders/orders";
 import UserProfile from "./components/profile/profile";
 import CateringMenu from "./components/cateringmenu/menu";
+import { useSearchParams } from "next/navigation";
 
 const Caterers = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedOrderCaterer, setSelectedOrderCaterer] = useState(null);
   const [cartItems, setCartItems] = useState([]); 
+  const searchParams = useSearchParams();
+  const user = searchParams.get("user");
+  const isGuest = user === "guest";
   
   const cartContainsItems = useMemo(() => cartItems.length > 0, [activeTab]);
 
   const renderContent = () => {
     switch (activeTab) {
       case "home":
-        return <UserHome setSelectedOrderCaterer={setSelectedOrderCaterer} setActiveTab={setActiveTab} />;
+        return <UserHome setSelectedOrderCaterer={setSelectedOrderCaterer} setActiveTab={setActiveTab} isGuest={isGuest} />;
       case "cart":
         return <UserCart cartItems={cartItems} removeFromCart={(item) => setCartItems(prev => prev.filter(i => i.id !== item.id))} />;
       case "orders":
@@ -106,7 +110,7 @@ const Caterers = () => {
           </div>
         )}
 
-        <Header links={links} setActiveTab={setActiveTab} activeTab={activeTab} cartContains={cartContainsItems} />
+        <Header links={links} setActiveTab={setActiveTab} activeTab={activeTab} cartContains={cartContainsItems} isGuest={isGuest} />
       </div>
 
       <div className="h-screen">

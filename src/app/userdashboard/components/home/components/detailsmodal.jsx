@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const CatererDetailsModal = ({ caterer, isOpen, onClose }) => {
+const CatererDetailsModal = ({ caterer, isOpen, onClose, isGuest }) => {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingApplied, setRatingApplied] = useState(false);
@@ -140,9 +140,16 @@ const CatererDetailsModal = ({ caterer, isOpen, onClose }) => {
               <h2 className="text-2xl font-semibold text-gray-800">{caterer.cateringname}</h2>
               <p className="text-sm italic text-gray-600">{caterer.description}</p>
               <p className="text-sm text-gray-500 mt-2">
-                ⭐ {caterer?.rating} | Price range &#8377;{caterer.pricerange.split('-')[0]} - &#8377;{caterer.pricerange.split('-')[1]}
+                ⭐ {caterer?.rating} | Price range &#8377;{
+                  caterer?.pricerange && caterer.pricerange.includes('-') 
+                    ? caterer.pricerange.split('-')[0].trim() 
+                    : "N/A"
+                } - &#8377;{
+                  caterer?.pricerange && caterer.pricerange.includes('-') 
+                    ? caterer.pricerange.split('-')[1].trim() 
+                    : "N/A"
+                }
               </p>
-
               <div className="mt-4 text-gray-700">
                 <h3 className="text-lg font-semibold">
                   Dedicated to Exceptional {caterer.eventtype} Experiences
@@ -164,11 +171,13 @@ const CatererDetailsModal = ({ caterer, isOpen, onClose }) => {
                       onClick={() => setUserRating(star)}
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
+                      disabled={isGuest}
                     />
                   ))}
                 </div>
 
                  <button
+                  disabled={isGuest}
                   onClick={handleApplyRating}
                   className={`mt-3 px-4 py-2 rounded bg-blue-600 text-white font-semibold transition 
                     disabled:bg-gray-400 disabled:cursor-not-allowed`}

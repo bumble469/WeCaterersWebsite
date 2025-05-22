@@ -36,12 +36,12 @@ const initialErrors = {
 
 const API_ENDPOINTS = {
   login: {
-    user: 'http://localhost:3000/api/auth/user/login',
-    caterer: 'http://localhost:3000/api/auth/caterer/login',
+    user: '/api/auth/user/login',
+    caterer: '/api/auth/caterer/login',
   },
   signup: {
-    user: 'http://localhost:3000/api/auth/user/signup',
-    caterer: 'http://localhost:3000/api/auth/caterer/signup',
+    user: '/api/auth/user/signup',
+    caterer: '/api/auth/caterer/signup',
   }
 };
 

@@ -1,5 +1,6 @@
 'use client';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import logo from '../assets/images/logo1.png';
 import landingpageimage from '../assets/images/landingpageimage.jpg';
@@ -14,10 +15,15 @@ import homeabout from '@/assets/images/home-about.jpg';
 import homelottie from '@/assets/images/home-lottie.json';
 import dynamic from 'next/dynamic';
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
-import Link from 'next/link';
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState(null);
+
+  const router = useRouter();
+
+  const handleExploreClick = () => {
+    router.push('/userdashboard?user=guest');
+  };
 
   const handleLinkClick = (section) => {
     setActiveSection(section);
@@ -91,7 +97,7 @@ export default function Home() {
                 <h1 className="headingfont text-4xl sm:text-5xl font-bold text-gray-900 mb-1">We Caterers</h1>
                 <Lottie animationData={homelottie} className='h-24 w-auto pb-6'/>
               </div>
-              <Link href="/userdashboard" className="mb-3 text-center w-1/2 py-2 px-4 text-gray-700 border cursor-pointer transition duration-200 hover:scale-103">Explore</Link>
+              <button onClick={handleExploreClick} className="mb-3 text-center w-1/2 py-2 px-4 text-gray-700 border cursor-pointer transition duration-200 hover:scale-103">Explore</button>
               <p className="text-md sm:text-lg text-gray-600 italic mb-4">
                 “Delivering excellence, one plate at a time.”
               </p>
@@ -129,6 +135,7 @@ export default function Home() {
           }
           alt="Landing Page"
           fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover transition-opacity duration-700 opacity-0 animate-fadeIn"
           priority
         />
