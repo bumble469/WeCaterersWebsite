@@ -23,22 +23,22 @@ const AboutSection = () => {
           <p className="text-md sm:text-lg text-gray-600 leading-relaxed text-justify">
             At <span className="font-semibold text-blue-600">We Caterers</span>, we specialize in delivering exceptional culinary experiences for every occasion.
             From intimate gatherings to grand celebrations, our team ensures that every dish is crafted with passion, precision, and premium ingredients.
-            With a commitment to quality and customer satisfaction, we bring flavor and elegance to your events — one plate at a time.
+            With a commitment to quality and customer satisfaction, we bring flavor and elegance to your events &mdash; one plate at a time.
           </p>
         </div>
 
         <div className="bg-gray-50 p-6 rounded-xl shadow-md text-left">
           <h3 className="text-xl font-semibold text-blue-700 mb-2">Who We Are</h3>
           <p className="text-gray-700">
-            We’re a team of chefs, event planners, and hospitality professionals with years of experience in curating unforgettable dining moments.
-            Our strength lies in our versatility, creativity, and deep understanding of our clients' needs.
+            We&rsquo;re a team of chefs, event planners, and hospitality professionals with years of experience in curating unforgettable dining moments.
+            Our strength lies in our versatility, creativity, and deep understanding of our clients&rsquo; needs.
           </p>
         </div>
 
         <div className="bg-gray-50 p-6 rounded-xl shadow-md text-left">
           <h3 className="text-xl font-semibold text-blue-700 mb-2">Our Mission</h3>
           <p className="text-gray-700">
-            To redefine catering by combining innovation with tradition — offering food that not only tastes amazing but also creates lasting memories.
+            To redefine catering by combining innovation with tradition &mdash; offering food that not only tastes amazing but also creates lasting memories.
           </p>
         </div>
 

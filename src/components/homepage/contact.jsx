@@ -22,7 +22,7 @@ const ContactSection = () => {
         <div>
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Get in Touch</h2>
           <p className="text-gray-600 mb-6">
-            Have questions or want to book our catering service? We'd love to hear from you.
+            Have questions or want to book our catering service? We&apos;d love to hear from you.
             Reach out via the form or use the contact details below.
           </p>
           <ul className="text-gray-700 space-y-4">
