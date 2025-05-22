@@ -63,13 +63,13 @@ const AdminOverview = () => {
             { name: 'Services Delivered', count: data.servicesDelivered, icon: <FaTools className="text-indigo-500 text-3xl" /> },
           ]);
         } catch {
-          setStats(prev => prev); // or show some error
+          setStats(prev => prev); 
         }
       }
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchOverview();
   }, []);
 

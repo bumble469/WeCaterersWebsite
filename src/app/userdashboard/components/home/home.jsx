@@ -6,7 +6,8 @@ import Filters from './components/filter';
 import CatererDetailsModal from "./components/detailsmodal";
 import axios from "axios";
 import { toast } from 'react-toastify';
-import Lottie from "lottie-react";
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import loadinglottie from "../../../../assets/images/loadingicon.json";
 
 const UserHome = ({ setSelectedOrderCaterer, setActiveTab, isGuest }) => {

@@ -1,10 +1,10 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Briefcase, Utensils, DollarSign, CheckCircle, XCircle, Package } from 'lucide-react';
-import Lottie from 'lottie-react';
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import loadingicon from "../../../assets/images/loadingicon.json";
 
 const fadeInUp = {
@@ -71,7 +71,7 @@ const CatererDashboardOverview = () => {
             <div className="flex items-center gap-6 flex-1 min-w-0">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
                 <img 
-                  src={data.cateringimage || '/placeholder.jpg'} 
+                  src={data.cateringimage} 
                   alt="Caterer Profile" 
                   className="w-full h-full object-cover" 
                 />
@@ -87,7 +87,7 @@ const CatererDashboardOverview = () => {
               <div className="text-right">
                 <h3 className="text-xl font-semibold text-gray-900">Overall Rating</h3>
                 <p className="text-gray-600 text-lg mt-1">
-                <div className="text-3xl select-none">⭐ {data.rating != null ? `${data.rating} / 5` : 'No ratings yet'}</div>
+                  <span className="text-3xl select-none">⭐ {data.rating != null ? `${data.rating} / 5` : 'No ratings yet'}</span>
                 </p>
               </div>
             </div>

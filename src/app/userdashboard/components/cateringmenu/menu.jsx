@@ -8,7 +8,8 @@ import MenuItemDetailsModal from "./components/detailsmodal";
 import CateringServiceModal from "./components/servicemodal";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Lottie from "lottie-react";
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import loadinglottie from "../../../../assets/images/loadingicon.json";
 
 const CateringMenu = ({cateringid, addToCart}) => {

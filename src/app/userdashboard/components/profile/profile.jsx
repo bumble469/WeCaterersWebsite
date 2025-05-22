@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaEdit, FaSave, FaCamera, FaInstagram, FaTwitter, FaFacebook } from "react-icons/fa";
 import { motion } from "framer-motion";
-import Lottie from "lottie-react";
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import loadingicon from "../../../../assets/images/loadingicon.json";
 
 const UserProfile = () => {

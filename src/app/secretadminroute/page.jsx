@@ -1,16 +1,15 @@
-"use client";
-
+'use client'
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import loadingicon from "../../assets/images/loadingicon.json";
-import Lottie from "lottie-react";
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
-export default function SecretAdminPage() {
+const SecretAdminPage = () => {
   const [step, setStep] = useState("key");
   const [secretKey, setSecretKey] = useState("");
   const [email, setEmail] = useState("");
@@ -60,7 +59,7 @@ export default function SecretAdminPage() {
         setLoginAttempts(0);
         setTimeout(() => {
           router.push("/admindashboard");
-        }, 1100); // delay to allow toast to show
+        }, 1100);
       } else {
         setLoading(false);
         toast.error("Login failed. Please try again.", {
@@ -84,7 +83,6 @@ export default function SecretAdminPage() {
 
   return (
     <>
-      <ToastContainer />
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
         <AnimatePresence mode="wait">
           {step === "key" && (
@@ -194,3 +192,5 @@ export default function SecretAdminPage() {
     </>
   );
 }
+
+export default SecretAdminPage;

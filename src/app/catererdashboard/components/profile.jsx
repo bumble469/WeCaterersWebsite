@@ -5,7 +5,8 @@ import defaultcatererbanner from "../../../assets/images/defaultcatererbanner.pn
 import { FaPencilAlt } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Lottie from "lottie-react";
+import dynamic from 'next/dynamic';
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import loadingicon from "../../../assets/images/loadingicon.json";
 
 const fadeInUp = {
