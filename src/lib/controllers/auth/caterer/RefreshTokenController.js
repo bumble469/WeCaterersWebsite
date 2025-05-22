@@ -25,7 +25,7 @@ export const refreshAccessToken = async (refreshToken) => {
     const newAccessToken = jwt.sign(
       { cateringid: decoded.cateringid.toString(), email: decoded.email },
       process.env.JWT_SECRET,
-      { expiresIn: '10m' }
+      { expiresIn: '15s' }
     );
 
     return {

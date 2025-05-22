@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { TokenExpiredError } from "jsonwebtoken";
 import prisma from '@/lib/prisma/client';
 
 export const getCatererOrders = async (token) => {
@@ -57,6 +57,12 @@ export const getCatererOrders = async (token) => {
     return { status: 200, data: orders };
 
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return { status: 401, data: { error: 'Token has expired' } };
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return { status: 401, data: { error: 'Invalid token' } };
+    }
     console.error('Error fetching caterer orders:', error);
     return { status: 500, data: { error: 'Internal server error' } };
   }

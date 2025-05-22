@@ -7,7 +7,7 @@ function getImageMimeType(buffer) {
   const header = buffer.slice(0, 4).toString('hex').toUpperCase();
 
   if (header.startsWith('89504E47')) return 'image/png';       
-  if (header.startsWith('FFD8FFDB') || header.startsWith('FFD8FFE0') || header.startsWith('FFD8FFE1')) return 'image/jpeg';  // JPEG
+  if (header.startsWith('FFD8FFDB') || header.startsWith('FFD8FFE0') || header.startsWith('FFD8FFE1')) return 'image/jpeg';  
   if (header.startsWith('47494638')) return 'image/gif';       
   if (header.startsWith('424D')) return 'image/bmp';           
 
@@ -20,8 +20,7 @@ export const getMenu = async (token) => {
   }
 
   try {
-    const secret = process.env.JWT_SECRET;
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const cateringid = parseInt(decoded.cateringid);
     if (!cateringid) {
@@ -61,11 +60,16 @@ export const getMenu = async (token) => {
     };
 
   } catch (err) {
-    console.error('Error fetching services:', err);
+    console.error('Error fetching menu:', err);
+
+    if (err.name === 'TokenExpiredError') {
+      return { status: 401, data: { error: 'Token expired' } };
+    }
+
     if (err.name === 'JsonWebTokenError') {
       return { status: 403, data: { error: 'Invalid token' } };
     }
+
     return { status: 500, data: { error: 'Server error' } };
   }
 };
-

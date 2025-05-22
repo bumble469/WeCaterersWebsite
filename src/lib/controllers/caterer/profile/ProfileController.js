@@ -75,8 +75,14 @@ export const getCatererProfile = async (token) => {
       },
     };
 
-  } catch (err) {
-    console.error('Token verification failed:', err.message);
-    return { status: 403, data: { error: 'Invalid or expired token!' } };
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return { status: 401, data: { error: 'Token has expired' } };
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return { status: 401, data: { error: 'Invalid token' } };
+    }
+    console.error('Error fetching caterer orders:', error);
+    return { status: 500, data: { error: 'Internal server error' } };
   }
 };
