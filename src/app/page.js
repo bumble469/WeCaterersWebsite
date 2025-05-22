@@ -31,14 +31,13 @@ export default function Home() {
 
   return (
     <div className="h-screen overflow-y-auto md:overflow-y-hidden bg-white flex flex-col sm:flex-row">
-      {/* Left Section */}
       <div
         className={`transition-all duration-300 p-2 flex flex-col p-4 ${
           activeSection ? 'w-full md:w-[65%]' : 'w-full md:w-1/2'
         }`}
       >
         <div className="flex flex-col md:flex-row items-center gap-x-12">
-          <Image src={logo} className="h-28 w-auto cursor-pointer -m-4" alt="Logo" onClick={()=>setActiveSection(null)} />
+          <Image src={logo} className="h-28 w-auto cursor-pointer -m-4" alt="Logo" onClick={() => setActiveSection(null)} />
           <nav className="flex text-sm md:text-lg text-gray-700 gap-x-6 md:gap-x-12 z-10">
             <a
               href="#about"
@@ -72,7 +71,7 @@ export default function Home() {
         </div>
         <div className="block md:hidden mt-4 transition-opacity duration-700 ease-in-out">
           <Image
-            key={activeSection} // This forces re-mount on section change
+            key={activeSection}
             src={
               activeSection === 'login'
                 ? homelogin
@@ -92,12 +91,17 @@ export default function Home() {
 
         <div className="flex custom-scrollbar flex-col justify-center pt-8 md:h-full my-8 md:overflow-y-auto">
           {!activeSection && (
-            <div className='flex flex-col items-center px-4 md:mt-0 md:items-start'>
-              <div className='flex items-center gap-x-2'>
+            <div className="flex flex-col items-center px-4 md:mt-0 md:items-start">
+              <div className="flex items-center gap-x-2">
                 <h1 className="headingfont text-4xl sm:text-5xl font-bold text-gray-900 mb-1">We Caterers</h1>
-                <Lottie animationData={homelottie} className='h-24 w-auto pb-6'/>
+                <Lottie animationData={homelottie} className="h-24 w-auto pb-6" />
               </div>
-              <button onClick={handleExploreClick} className="mb-3 text-center w-1/2 py-2 px-4 text-gray-700 border cursor-pointer transition duration-200 hover:scale-103">Explore</button>
+              <button
+                onClick={handleExploreClick}
+                className="mb-3 text-center w-1/2 py-2 px-4 text-gray-700 border cursor-pointer transition duration-200 hover:scale-103"
+              >
+                Explore
+              </button>
               <p className="text-md sm:text-lg text-gray-600 italic mb-4">
                 “Delivering excellence, one plate at a time.”
               </p>
@@ -105,12 +109,11 @@ export default function Home() {
                 We are dedicated to crafting memorable dining experiences with fresh, high-quality ingredients. Whether it's a grand celebration or an intimate gathering, our team ensures every detail is perfect.
               </p>
               <p className="text-sm sm:text-base text-gray-500 italic mt-2">
-                "Your satisfaction is our commitment – from the first bite to the last."
+                &quot;Your satisfaction is our commitment – from the first bite to the last.&quot;
               </p>
             </div>
           )}
 
-          {/* Render the active section below the title */}
           {activeSection === 'about' && <AboutSection />}
           {activeSection === 'services' && <ServicesSection />}
           {activeSection === 'contact' && <ContactSection />}
@@ -118,10 +121,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Right Section - Image */}
       <div className="hidden md:w-1/2 md:block w-full h-64 sm:h-auto relative overflow-hidden rounded-tl-[20rem] transition-opacity duration-700 ease-in-out">
         <Image
-          key={activeSection} // Trigger re-animation on change
+          key={activeSection}
           src={
             activeSection === 'login'
               ? homelogin
