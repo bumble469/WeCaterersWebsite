@@ -16,6 +16,7 @@ const CatererDashboardMenu = () => {
   const [editingMenu, setEditingMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     fetchMenuItems();
   }, []);
@@ -165,7 +166,7 @@ const CatererDashboardMenu = () => {
 
   return (
     <section className="bg-white rounded-lg shadow-md p-6">
-      {isLoading == 0 ? (
+      {isLoading ? (
         <div className="flex justify-center items-center h-[50vh]">
           <Lottie animationData={loadingicon} loop={true} style={{ height: 50 }} />
         </div>
