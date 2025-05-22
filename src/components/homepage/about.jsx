@@ -47,7 +47,7 @@ const AboutSection = () => {
           <ul className="list-disc list-inside text-gray-700 space-y-1">
             <li>Premium ingredients and diverse menu options</li>
             <li>Attention to detail and elegant presentation</li>
-            <li>Timely service and customer-first approach</li>
+            <li>Timely service and customer first approach</li>
             <li>Customizable packages for any event size</li>
           </ul>
         </div>

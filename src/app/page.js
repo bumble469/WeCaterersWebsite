@@ -109,7 +109,7 @@ export default function Home() {
                 We are dedicated to crafting memorable dining experiences with fresh, high-quality ingredients. Whether it&apos;s a grand celebration or an intimate gathering, our team ensures every detail is perfect.
               </p>
               <p className="text-sm sm:text-base text-gray-500 italic mt-2">
-                &quot;Your satisfaction is our commitment – from the first bite to the last.&quot;
+                &quot;Your satisfaction is our commitment from the first bite to the last&quot;
               </p>
             </div>
           )}
