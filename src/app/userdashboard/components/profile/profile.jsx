@@ -5,10 +5,13 @@ import { motion } from "framer-motion";
 import dynamic from 'next/dynamic';
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import loadingicon from "../../../../assets/images/loadingicon.json";
-
+import defaultuserimage from "../../../../assets/images/defaultuser.webp"
+import { toast } from "react-toastify";
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchProfile = async () => {
     try {
@@ -55,6 +58,24 @@ const UserProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const res = await axios.delete("/api/auth/user/delete",{}, { withCredentials: true });
+      if (res.status === 200) {
+        toast.info("Account deleted successfully");
+        window.location.href = "/";
+      } else {
+        toast.error("Failed to delete account.");
+      }
+    } catch (err) {
+      console.error("Error deleting account:", err);
+      toast.error("An error occurred while deleting the account.");
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
 
   useEffect(() => {
     fetchProfile();
@@ -157,7 +178,6 @@ const UserProfile = () => {
           }
         } catch (refreshErr) {
           console.error("Token refresh failed:", refreshErr);
-          // Optional: logout or redirect user here
         }
       } else {
         console.error("Error updating profile:", err);
@@ -188,14 +208,14 @@ const UserProfile = () => {
             {isEditing ? (
               <button
                 onClick={handleSave}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-md flex items-center gap-2 text-sm sm:text-base transition duration-300"
+                className="bg-green-600 cursor-pointer hover:bg-green-700 text-white px-4 py-1.5 rounded-md flex items-center gap-2 text-sm sm:text-base transition duration-300"
               >
                 <FaSave /> Save Changes
               </button>
             ) : (
               <button
                 onClick={handleEditToggle}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md flex items-center gap-2 text-sm sm:text-base transition duration-300"
+                className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-4 py-1.5 rounded-md flex items-center gap-2 text-sm sm:text-base transition duration-300"
               >
                 <FaEdit /> Edit Profile
               </button>
@@ -212,11 +232,20 @@ const UserProfile = () => {
             exit={{ scale: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <img
-              src={userData.profilePicture}
+           <div className="flex flex-col items-center justify-center">
+             <img
+              src={userData.profilePicture || defaultuserimage}
               alt="Profile"
               className="w-40 h-40 object-cover rounded-full border-4 border-gray-300"
-            />
+              />
+              <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="bg-red-800 cursor-pointer hover:bg-red-700 text-white px-4 py-1.5 rounded-md text-sm sm:text-base transition duration-300 mt-4"
+                >
+                  Delete Account
+              </button>
+            </div>
+
             {isEditing && (
               <>
                 <label
@@ -233,9 +262,10 @@ const UserProfile = () => {
                   className="hidden"
                 />
               </>
+              
             )}
           </motion.div>
-
+            
           {/* Personal Info */}
           <motion.div
             className="flex flex-col justify-start space-y-3"
@@ -360,6 +390,35 @@ const UserProfile = () => {
             </div>
           </motion.div>
         </div>
+        {showDeleteModal && (
+          <>
+          <div className="fixed inset-0 backdrop-blur-[2px] bg-black/30 z-50 pointer-events-auto shadow-lg" />
+
+          <div className="fixed inset-0 flex justify-center items-center z-50 pointer-events-auto">
+            <div className="bg-white rounded-lg p-6 w-80 shadow-2xl ring-1 ring-black/10">
+              <h2 className="text-lg font-semibold mb-4 text-gray-800">Confirm Deletion</h2>
+              <p className="text-gray-600 mb-4">
+                Are you sure you want to delete your account? This action is irreversible.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="bg-gray-300 cursor-pointer hover:bg-gray-400 text-gray-800 px-4 py-2 rounded shadow-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  className="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-4 py-2 rounded shadow-md"
+                  disabled={deleting}
+                >
+                  {deleting ? "Deleting..." : "Confirm"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+        )}
       </>
       )
     }

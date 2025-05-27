@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import dynamic from 'next/dynamic';
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import loadingicon from "../../../assets/images/loadingicon.json";
+import defaultimage from "../../../assets/images/defaultuser.webp";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -35,6 +36,8 @@ const CatererDashboardProfile = () => {
     address: "",
     eventtype: "",
   });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const originalProfile = useRef({});
 
@@ -91,6 +94,24 @@ const CatererDashboardProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const res = await axios.delete("/api/auth/caterer/delete",{}, { withCredentials: true });
+      if (res.status === 200) {
+        toast.info("Account deleted successfully");
+        window.location.href = "/";
+      } else {
+        toast.error("Failed to delete account.");
+      }
+    } catch (err) {
+      console.error("Error deleting account:", err);
+      toast.error("An error occurred while deleting the account.");
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
 
   useEffect(() => {
     fetchProfile();
@@ -205,8 +226,12 @@ const CatererDashboardProfile = () => {
               disabled={!isEditing}
             />
           </label>
-
-          {/* Edit/Cancel button below banner top-right */}
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="bg-red-800 absolute cursor-pointer right-3 w-28 md:w-54 hover:bg-red-700 text-white px-4 py-1.5 rounded-md text-sm sm:text-base transition duration-300 mt-4"
+          >
+            Delete Account
+          </button>
           <button
             onClick={handleEditToggle}
             className="absolute cursor-pointer right-3 top-[calc(100%+10px)] bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700 font-semibold z-30"
@@ -214,13 +239,13 @@ const CatererDashboardProfile = () => {
           >
             {isEditing ? "Cancel" : "Edit"}
           </button>
-
+          
           <div className="relative left-6 bottom-10 w-32 h-32 rounded-full border-4 border-white bg-gray-200 z-10">
-            <img
-              src={profile.icon}
+              <img
+              src={profile.icon || defaultimage.src}
               alt="Caterer Icon"
               className="w-full h-full object-cover rounded-full"
-            />
+              />
             <label className="absolute border border-gray-500 bottom-2 right-0 bg-white p-1 z-20 rounded-full shadow cursor-pointer hover:bg-gray-100">
               <FaPencilAlt className="text-gray-900 w-5 h-5" />
               <input
@@ -330,6 +355,35 @@ const CatererDashboardProfile = () => {
           </motion.button>
         )}
       </motion.div>
+      {showDeleteModal && (
+          <>
+          <div className="fixed inset-0 backdrop-blur-[2px] bg-black/30 z-50 pointer-events-auto shadow-lg" />
+
+          <div className="fixed inset-0 flex justify-center items-center z-50 pointer-events-auto">
+            <div className="bg-white rounded-lg p-6 w-80 shadow-2xl ring-1 ring-black/10">
+              <h2 className="text-lg font-semibold mb-4 text-gray-800">Confirm Deletion</h2>
+              <p className="text-gray-600 mb-4">
+                Are you sure you want to delete your account? This action is irreversible.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="bg-gray-300 cursor-pointer hover:bg-gray-400 text-gray-800 px-4 py-2 rounded shadow-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  className="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-4 py-2 rounded shadow-md"
+                  disabled={deleting}
+                >
+                  {deleting ? "Deleting..." : "Confirm"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+        )}
         </>
       )}
     </motion.div>
